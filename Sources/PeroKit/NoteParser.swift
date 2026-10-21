@@ -218,11 +218,11 @@ public enum NoteParser {
         case "svg":
             note.flags.insert(.sketches)
         case "pdf":
-            note.flags.insert(name.hasPrefix("Скан") ? .scans : .pdfs)
+            note.flags.insert(isScan(name) ? .scans : .pdfs)
         case "m4a", "mp3", "wav", "aac", "caf", "aiff", "aif":
             note.flags.insert(.audio)
         case "png", "jpg", "jpeg", "gif", "heic", "heif", "webp", "tif", "tiff", "bmp":
-            note.flags.insert(name.hasPrefix("Скан") ? .scans : .images)
+            note.flags.insert(isScan(name) ? .scans : .images)
         default:
             note.flags.insert(image ? .images : .documents)
         }
@@ -281,3 +281,6 @@ public enum NoteParser {
         s.count > limit ? String(s.prefix(limit)) : s
     }
 }
+
+/// Documents scanned with an iPhone are saved as «Скан…» (or «Scan…» in English).
+fileprivate func isScan(_ name: String) -> Bool { name.hasPrefix("Скан") || name.hasPrefix("Scan") }

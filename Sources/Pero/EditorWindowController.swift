@@ -94,8 +94,8 @@ final class EditorWindowController: NSWindowController, NSToolbarDelegate, NSMen
         let panel = NSOpenPanel()
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
-        panel.prompt = "Открыть"
-        panel.message = "Выберите папку с Markdown-файлами"
+        panel.prompt = String(localized: "Открыть")
+        panel.message = String(localized: "Выберите папку с Markdown-файлами")
         panel.directoryURL = sidebar.root
         panel.beginSheetModal(for: window) { [weak self] response in
             guard response == .OK, let url = panel.url, let self else { return }
@@ -181,7 +181,7 @@ final class EditorWindowController: NSWindowController, NSToolbarDelegate, NSMen
                  willBeInsertedIntoToolbar flag: Bool) -> NSToolbarItem? {
         guard id == Self.modeItem else { return nil }
         let item = NSToolbarItem(itemIdentifier: id)
-        item.label = "Исходник"
+        item.label = String(localized: "Исходник")
         item.target = self
         item.action = #selector(toggleSourceMode(_:))
         item.isBordered = true
@@ -193,6 +193,6 @@ final class EditorWindowController: NSWindowController, NSToolbarDelegate, NSMen
         let source = editor.isSourceMode
         item.image = NSImage(systemSymbolName: source ? "text.alignleft" : "chevron.left.forwardslash.chevron.right",
                              accessibilityDescription: nil)
-        item.toolTip = source ? "Вернуться к оформленному тексту (⌘/)" : "Показать исходник Markdown (⌘/)"
+        item.toolTip = source ? String(localized: "Вернуться к оформленному тексту (⌘/)") : String(localized: "Показать исходник Markdown (⌘/)")
     }
 }

@@ -25,7 +25,7 @@ final class QuickNotePanel: NSObject, NSWindowDelegate {
         let panel = NSPanel(contentRect: NSRect(x: 0, y: 0, width: 420, height: 360),
                             styleMask: [.titled, .closable, .resizable, .fullSizeContentView],
                             backing: .buffered, defer: false)
-        panel.title = "Быстрая заметка"
+        panel.title = String(localized: "Быстрая заметка")
         panel.level = .floating
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         panel.hidesOnDeactivate = false

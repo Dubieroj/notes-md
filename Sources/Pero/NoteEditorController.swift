@@ -73,11 +73,11 @@ final class NoteEditorController: NSViewController {
 /// «Эта заметка заблокирована»: password, hint, Touch ID.
 final class LockedNoteView: NSStackView {
     let password = NSSecureTextField()
-    private let title = NSTextField(labelWithString: "Эта заметка заблокирована.")
-    private let subtitle = NSTextField(labelWithString: "Введите пароль для заметок, чтобы открыть её.")
+    private let title = NSTextField(labelWithString: String(localized: "Эта заметка заблокирована."))
+    private let subtitle = NSTextField(labelWithString: String(localized: "Введите пароль для заметок, чтобы открыть её."))
     private let hint = NSTextField(labelWithString: "")
     private let touchID = NSButton()
-    private let hintButton = NSButton(title: "Подсказка", target: nil, action: nil)
+    private let hintButton = NSButton(title: String(localized: "Подсказка"), target: nil, action: nil)
 
     var onPassword: (String) -> Void = { _ in }
     var onTouchID: () -> Void = {}
@@ -96,13 +96,13 @@ final class LockedNoteView: NSStackView {
         subtitle.alignment = .center
         subtitle.lineBreakMode = .byWordWrapping
         subtitle.maximumNumberOfLines = 2
-        password.placeholderString = "Пароль"
+        password.placeholderString = String(localized: "Пароль")
         password.target = self
         password.action = #selector(submit)
         password.widthAnchor.constraint(equalToConstant: 220).isActive = true
         hint.textColor = .secondaryLabelColor
         hint.isHidden = true
-        touchID.title = "Использовать Touch ID"
+        touchID.title = String(localized: "Использовать Touch ID")
         touchID.image = NSImage(systemSymbolName: "touchid", accessibilityDescription: nil)
         touchID.imagePosition = .imageLeading
         touchID.bezelStyle = .rounded
@@ -122,7 +122,7 @@ final class LockedNoteView: NSStackView {
         hint.isHidden = true
         touchID.isHidden = !(Settings.useTouchID && LockManager.canUseBiometrics)
         hintButton.isHidden = hintText() == nil
-        setAccessibilityLabel("Заметка «\(noteTitle)» заблокирована")
+        setAccessibilityLabel(String(localized: "Заметка «\(noteTitle)» заблокирована"))
     }
 
     func shake() {
@@ -137,7 +137,7 @@ final class LockedNoteView: NSStackView {
     @objc private func submit() { onPassword(password.stringValue) }
     @objc private func touch() { onTouchID() }
     @objc private func showHint() {
-        hint.stringValue = "Подсказка: " + (hintText() ?? "")
+        hint.stringValue = String(localized: "Подсказка: \(hintText() ?? "")")
         hint.isHidden = false
     }
 }

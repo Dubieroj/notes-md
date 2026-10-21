@@ -1,0 +1,13 @@
+/* English. Keys are the Russian source strings (with %@ / %lld for inserted values). */
+
+"Заблокировано" = "Locked";
+"Закреплённые" = "Pinned";
+"Закреплённые заметки." = "Your pinned notes.";
+"Заметка" = "Note";
+"Заметки" = "Notes";
+"Нет заметок" = "No Notes";
+"Одна заметка на рабочем столе." = "A single note on your desktop.";
+"Папка" = "Folder";
+"Показывает выбранную заметку." = "Shows the note you choose.";
+"Показывает последние заметки папки." = "Shows the latest notes in a folder.";
+"Последние заметки папки." = "The latest notes in a folder.";

@@ -216,7 +216,7 @@ private struct OutlineView: View {
 }
 
 private struct Placeholder<Action: View>: View {
-    let text: String
+    let text: LocalizedStringKey
     @ViewBuilder let action: () -> Action
 
     var body: some View {

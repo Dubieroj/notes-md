@@ -10,7 +10,7 @@ final class SettingsWindowController: NSWindowController {
         if shared == nil {
             let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 520, height: 560), styleMask: [.titled, .closable],
                                   backing: .buffered, defer: false)
-            window.title = "Настройки"
+            window.title = String(localized: "Настройки")
             window.contentViewController = NSHostingController(rootView: SettingsView(library: library, lock: lock))
             window.center()
             shared = SettingsWindowController(window: window)
@@ -154,7 +154,7 @@ private struct SettingsView: View {
         PasswordSheet.change(on: window) { old, new, hint in
             do { try lock.changePassword(from: old, to: new, hint: hint) } catch {
                 let alert = NSAlert()
-                alert.messageText = "Старый пароль неверный"
+                alert.messageText = String(localized: "Старый пароль неверный")
                 alert.beginSheetModal(for: window)
             }
         }
@@ -166,7 +166,7 @@ private struct SettingsView: View {
         let panel = NSOpenPanel()
         panel.canChooseFiles = false
         panel.canChooseDirectories = true
-        panel.prompt = "Подключить"
+        panel.prompt = String(localized: "Подключить")
         guard panel.runModal() == .OK, let url = panel.url else { return }
         appDelegate?.main?.link(url)
         linked = Settings.linkedFolders

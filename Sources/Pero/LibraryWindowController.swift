@@ -35,7 +35,7 @@ final class LibraryWindowController: NSWindowController, NSWindowDelegate, NSToo
         let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 1180, height: 760),
                               styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
                               backing: .buffered, defer: false)
-        window.title = "Заметки.md"
+        window.title = String(localized: "Заметки.md")
         window.titleVisibility = .hidden
         window.minSize = NSSize(width: 640, height: 400)
         window.toolbarStyle = .unified
@@ -148,18 +148,18 @@ final class LibraryWindowController: NSWindowController, NSWindowDelegate, NSToo
 
     func reloadList(selectFirst: Bool = false, select: [String]? = nil) {
         let groups: [NoteGroup]
-        var empty = "Нет заметок"
+        var empty = String(localized: "Нет заметок")
         if !searchText.isEmpty {
             let found = library.search(searchText)
-            groups = found.isEmpty ? [] : [NoteGroup(title: "Найдено: \(found.count)", notes: found)]
+            groups = found.isEmpty ? [] : [NoteGroup(title: String(localized: "Найдено: \(found.count)"), notes: found)]
             list.showsFolders = true
-            empty = "Ничего не найдено"
+            empty = String(localized: "Ничего не найдено")
         } else {
             let notes = library.notes(in: scope)
             switch scope {
             case .trash:
                 groups = NoteSorting.groups(notes, by: .modified, ascending: false, groupByDate: false, isPinned: { _ in false })
-                empty = "Здесь появятся удалённые заметки"
+                empty = String(localized: "Здесь появятся удалённые заметки")
             default:
                 groups = NoteSorting.groups(notes, by: sortKey, ascending: ascending, groupByDate: groupByDate,
                                             isPinned: { self.library.isPinned($0) })
@@ -264,7 +264,7 @@ final class LibraryWindowController: NSWindowController, NSWindowDelegate, NSToo
         guard paths.count == 1, let path = paths.first else {
             closeSession()
             let n = paths.count
-            editorPane.display(.nothing(n > 1 ? "Выбрано: \(n) \(Plural.notes(n))" : (list.rows.isEmpty ? "" : "Нет выбранной заметки")))
+            editorPane.display(.nothing(n > 1 ? String(localized: "Выбрано: \(n) \(Plural.notes(n))") : (list.rows.isEmpty ? "" : String(localized: "Нет выбранной заметки"))))
             return
         }
         if !navigating, previous.count == 1, let p = previous.first, p != path {
@@ -309,7 +309,7 @@ final class LibraryWindowController: NSWindowController, NSWindowDelegate, NSToo
             return
         }
         guard let s = try? SessionStore.shared.acquire(library: library, path: path) else {
-            return editorPane.display(.nothing("Не удалось открыть заметку"))
+            return editorPane.display(.nothing(String(localized: "Не удалось открыть заметку")))
         }
         attach(s)
         editorPane.display(.session(s), focus: focus)
@@ -447,29 +447,29 @@ final class LibraryWindowController: NSWindowController, NSWindowDelegate, NSToo
         switch id {
         case Self.viewModeID:
             let group = NSToolbarItemGroup(itemIdentifier: id, images: [
-                NSImage(systemSymbolName: "list.bullet", accessibilityDescription: "Список")!,
-                NSImage(systemSymbolName: "square.grid.2x2", accessibilityDescription: "Галерея")!,
-            ], selectionMode: .selectOne, labels: ["Список", "Галерея"], target: self, action: #selector(viewModeChanged(_:)))
-            group.label = "Вид"
+                NSImage(systemSymbolName: "list.bullet", accessibilityDescription: String(localized: "Список"))!,
+                NSImage(systemSymbolName: "square.grid.2x2", accessibilityDescription: String(localized: "Галерея"))!,
+            ], selectionMode: .selectOne, labels: [String(localized: "Список"), String(localized: "Галерея")], target: self, action: #selector(viewModeChanged(_:)))
+            group.label = String(localized: "Вид")
             group.selectedIndex = Settings.galleryView ? 1 : 0
             return group
-        case Self.deleteID: return button("trash", "Удалить", #selector(deleteNote(_:)))
+        case Self.deleteID: return button("trash", String(localized: "Удалить"), #selector(deleteNote(_:)))
         case Self.listSeparatorID:
             return NSTrackingSeparatorToolbarItem(identifier: id, splitView: split.splitView, dividerIndex: 1)
-        case Self.composeID: return button("square.and.pencil", "Новая заметка", #selector(newNote(_:)))
-        case Self.formatID: return menuItem("textformat", "Формат", MainMenu.paragraphStylesMenu())
-        case Self.checklistID: return button("checklist", "Чек-лист", #selector(toolbarChecklist(_:)))
-        case Self.tableID: return button("tablecells", "Таблица", #selector(toolbarTable(_:)))
-        case Self.attachID: return menuItem("paperclip", "Вложения", MainMenu.attachMenu())
-        case Self.sourceID: return button("chevron.left.forwardslash.chevron.right", "Исходник", #selector(toggleSourceMode(_:)))
-        case Self.lockID: return menuItem("lock", "Блокировка", MainMenu.lockMenu())
+        case Self.composeID: return button("square.and.pencil", String(localized: "Новая заметка"), #selector(newNote(_:)))
+        case Self.formatID: return menuItem("textformat", String(localized: "Формат"), MainMenu.paragraphStylesMenu())
+        case Self.checklistID: return button("checklist", String(localized: "Чек-лист"), #selector(toolbarChecklist(_:)))
+        case Self.tableID: return button("tablecells", String(localized: "Таблица"), #selector(toolbarTable(_:)))
+        case Self.attachID: return menuItem("paperclip", String(localized: "Вложения"), MainMenu.attachMenu())
+        case Self.sourceID: return button("chevron.left.forwardslash.chevron.right", String(localized: "Исходник"), #selector(toggleSourceMode(_:)))
+        case Self.lockID: return menuItem("lock", String(localized: "Блокировка"), MainMenu.lockMenu())
         case Self.shareID:
-            return button("square.and.arrow.up", "Поделиться", #selector(shareFromToolbar(_:)))
+            return button("square.and.arrow.up", String(localized: "Поделиться"), #selector(shareFromToolbar(_:)))
         case Self.searchID:
             let item = NSSearchToolbarItem(itemIdentifier: id)
-            item.searchField.placeholderString = "Поиск"
+            item.searchField.placeholderString = String(localized: "Поиск")
             item.searchField.delegate = self
-            item.label = "Поиск"
+            item.label = String(localized: "Поиск")
             searchField = item.searchField
             return item
         default: return nil
@@ -504,13 +504,13 @@ final class LibraryWindowController: NSWindowController, NSWindowDelegate, NSToo
              #selector(printNote(_:)), #selector(openNoteInNewWindow(_:)), #selector(moveToFolder(_:)), #selector(copyAsMarkdown(_:)):
             if item.action == #selector(pinNote(_:)) {
                 let pinned = !selected.isEmpty && selected.allSatisfy { library.isPinned($0) }
-                item.title = pinned ? "Открепить заметку" : "Закрепить заметку"
+                item.title = pinned ? String(localized: "Открепить заметку") : String(localized: "Закрепить заметку")
             }
             if scope == .trash && item.action != #selector(deleteNote(_:)) && item.action != #selector(moveToFolder(_:)) { return false }
             return !selected.isEmpty
         case #selector(lockNote(_:)):
             let record = selected.count == 1 ? library.record(selected[0]) : nil
-            item.title = record?.isLocked == true ? "Снять защиту" : "Заблокировать заметку"
+            item.title = record?.isLocked == true ? String(localized: "Снять защиту") : String(localized: "Заблокировать заметку")
             return record != nil && scope != .trash
         case #selector(closeLockedNotes(_:)):
             return lock.isUnlocked
@@ -628,10 +628,10 @@ final class LibraryWindowController: NSWindowController, NSWindowDelegate, NSToo
         }
         // A link to a note that does not exist yet: offer to create it.
         let alert = NSAlert()
-        alert.messageText = "Заметки «\(target)» нет"
-        alert.informativeText = "Создать её в этой папке?"
-        alert.addButton(withTitle: "Создать")
-        alert.addButton(withTitle: "Отменить")
+        alert.messageText = String(localized: "Заметки «\(target)» нет")
+        alert.informativeText = String(localized: "Создать её в этой папке?")
+        alert.addButton(withTitle: String(localized: "Создать"))
+        alert.addButton(withTitle: String(localized: "Отменить"))
         guard let window else { return }
         alert.beginSheetModal(for: window) { response in
             guard response == .alertFirstButtonReturn else { return }

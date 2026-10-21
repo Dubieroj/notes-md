@@ -81,7 +81,7 @@ final class SmartFolderModel: ObservableObject {
     let allTags: [String]
 
     init(folder: SmartFolder?, folders: [String], tags: [String]) {
-        name = folder?.name ?? "Новая смарт-папка"
+        name = folder?.name ?? String(localized: "Новая смарт-папка")
         matchAll = folder?.matchAll ?? true
         rows = folder?.filters.map(FilterRow.init) ?? [FilterRow()]
         id = folder?.id ?? UUID().uuidString
@@ -102,7 +102,7 @@ private struct SmartFolderForm: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text(isNew ? "Новая смарт-папка" : "Изменить смарт-папку").font(.headline)
-            TextField("Название", text: $model.name)
+            TextField(String(localized: "smartFolder.name", defaultValue: "Название"), text: $model.name)
             HStack {
                 Text("Заметки, которые соответствуют")
                 Picker("", selection: $model.matchAll) {
@@ -149,7 +149,7 @@ private struct FilterRowView: View {
     var body: some View {
         HStack(alignment: .top) {
             Picker("", selection: $row.kind) {
-                ForEach(FilterRow.Kind.allCases) { Text($0.rawValue).tag($0) }
+                ForEach(FilterRow.Kind.allCases) { Text(LocalizedStringKey($0.rawValue)).tag($0) }
             }
             .labelsHidden()
             .frame(width: 170)
@@ -228,7 +228,7 @@ private struct FilterRowView: View {
                 }
                 .labelsHidden()
                 ForEach(folders, id: \.self) { f in
-                    Toggle(f.isEmpty ? "Заметки" : f, isOn: Binding(
+                    Toggle(f.isEmpty ? String(localized: "Заметки") : f, isOn: Binding(
                         get: { row.folders.contains(f) },
                         set: { on in if on { row.folders.insert(f) } else { row.folders.remove(f) } }))
                 }

@@ -65,7 +65,7 @@ final class LockManager {
     func unlockWithTouchID(_ done: @escaping (Bool) -> Void) {
         guard Settings.useTouchID, Self.canUseBiometrics, Keychain.load(for: library.root) != nil else { return done(false) }
         let context = LAContext()
-        context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: "открыть заблокированные заметки") { ok, _ in
+        context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: String(localized: "открыть заблокированные заметки")) { ok, _ in
             DispatchQueue.main.async {
                 guard ok, let key = Keychain.load(for: self.library.root) else { return done(false) }
                 self.opened(key)
@@ -106,7 +106,7 @@ enum Keychain {
         SecItemDelete(query as CFDictionary)
         var add = query
         add[kSecValueData as String] = data
-        add[kSecAttrLabel as String] = "Заметки.md: заблокированные заметки"
+        add[kSecAttrLabel as String] = String(localized: "Заметки.md: заблокированные заметки")
         SecItemAdd(add as CFDictionary, nil)
     }
 

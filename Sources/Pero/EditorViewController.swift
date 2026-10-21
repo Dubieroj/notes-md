@@ -231,7 +231,7 @@ final class EditorViewController: NSViewController, WKScriptMessageHandler, WKNa
         switch type {
         case "ready":
             isReady = true
-            configure(["home": NSHomeDirectory()])
+            configure(["home": NSHomeDirectory(), "lang": UILanguage.isRussian ? "ru" : "en"])
             onReady()
             load(keepView: false)
             if isSourceMode { setSourceMode(true) }
@@ -267,7 +267,7 @@ final class EditorViewController: NSViewController, WKScriptMessageHandler, WKNa
         case "attachFile":
             guard let b64 = body["data"] as? String, let data = Data(base64Encoded: b64) else { return }
             let name = body["name"] as? String ?? ""
-            if let markdown = onAttachFile(data, name.isEmpty ? "Вставка" : name) { insert(markdown) }
+            if let markdown = onAttachFile(data, name.isEmpty ? String(localized: "Вставка") : name) { insert(markdown) }
         case "pendingImages":
             // Pictures that came inside pasted HTML as data: URIs.
             for (i, uri) in (body["images"] as? [String] ?? []).enumerated() {
@@ -275,7 +275,7 @@ final class EditorViewController: NSViewController, WKScriptMessageHandler, WKNa
                       let data = Data(base64Encoded: String(uri[uri.index(after: comma)...])) else { continue }
                 let mime = uri.dropFirst("data:".count).prefix { $0 != ";" && $0 != "," }
                 let ext = UTType(mimeType: String(mime))?.preferredFilenameExtension ?? "png"
-                guard let markdown = onAttachFile(data, "Вставка.\(ext)"),
+                guard let markdown = onAttachFile(data, String(localized: "Вставка") + ".\(ext)"),
                       let target = markdown.range(of: #"\(([^)]*)\)"#, options: .regularExpression) else { continue }
                 let path = String(markdown[target].dropFirst().dropLast())
                 call("""
@@ -314,10 +314,10 @@ final class EditorViewController: NSViewController, WKScriptMessageHandler, WKNa
             // Other schemes hand the link to some app (ssh:, smb:, any app's own scheme): ask first.
             guard let window = view.window else { return }
             let alert = NSAlert()
-            alert.messageText = "Открыть ссылку?"
+            alert.messageText = String(localized: "Открыть ссылку?")
             alert.informativeText = href
-            alert.addButton(withTitle: "Открыть")
-            alert.addButton(withTitle: "Отменить")
+            alert.addButton(withTitle: String(localized: "Открыть"))
+            alert.addButton(withTitle: String(localized: "Отменить"))
             alert.beginSheetModal(for: window) { response in
                 if response == .alertFirstButtonReturn { NSWorkspace.shared.open(url) }
             }

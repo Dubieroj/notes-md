@@ -1,5 +1,6 @@
 // Headings of the document for the sidebar outline.
 import {ensureSyntaxTree, syntaxTree} from "@codemirror/language"
+import {t} from "./i18n.js"
 
 function plain(text) {
   return text
@@ -20,7 +21,7 @@ export function headings(state) {
         text = m[1] === "ATX"
           ? text.replace(/^#{1,6}[ \t]*/, "").replace(/[ \t]+#+[ \t]*$/, "")
           : text.split("\n").slice(0, -1).join(" ")
-        items.push({level: Number(m[2]), text: plain(text) || "Без названия", from: node.from})
+        items.push({level: Number(m[2]), text: plain(text) || t("Без названия"), from: node.from})
         return false
       }
       return node.name === "Document"

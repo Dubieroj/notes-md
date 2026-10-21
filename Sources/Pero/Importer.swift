@@ -12,9 +12,12 @@ final class Importer {
         var losses: Set<String> = []
 
         var summary: String {
-            var lines = ["Импортировано: \(notes) \(Plural.notes(notes))."]
-            if !skipped.isEmpty { lines.append("Пропущено: " + skipped.prefix(10).joined(separator: ", ") + (skipped.count > 10 ? "…" : "")) }
-            if !losses.isEmpty { lines.append("Не перенеслось: " + losses.sorted().joined(separator: ", ") + ".") }
+            var lines = [String(localized: "Импортировано: \(notes) \(Plural.notes(notes)).")]
+            if !skipped.isEmpty {
+                let list = skipped.prefix(10).joined(separator: ", ") + (skipped.count > 10 ? "…" : "")
+                lines.append(String(localized: "Пропущено: \(list)"))
+            }
+            if !losses.isEmpty { lines.append(String(localized: "Не перенеслось: \(losses.sorted().joined(separator: ", ")).")) }
             return lines.joined(separator: "\n")
         }
     }
@@ -96,7 +99,7 @@ final class Importer {
         if ext == "enex" { return importENEX(url, into: folder, then: then) }
         // RTF, RTFD, HTML, web archives: through HTML into Markdown.
         guard let html = Self.html(of: url) else { report.skipped.append(url.lastPathComponent); return then() }
-        report.losses.insert("шрифты и цвета текста")
+        report.losses.insert(String(localized: "шрифты и цвета текста"))
         convert(html, into: folder, name: name, created: created, modified: modified, extraTags: []) { then() }
     }
 
@@ -117,7 +120,7 @@ final class Importer {
             for (i, uri) in images.enumerated() {
                 guard let comma = uri.firstIndex(of: ","), let data = Data(base64Encoded: String(uri[uri.index(after: comma)...])) else { continue }
                 let ext = uri.contains("image/png") ? "png" : uri.contains("image/gif") ? "gif" : "jpg"
-                if let path = try? library.addAttachment(data: data, name: "Картинка.\(ext)") {
+                if let path = try? library.addAttachment(data: data, name: String(localized: "Картинка") + ".\(ext)") {
                     text = text.replacingOccurrences(of: "(pero-pending:\(i))", with: "(\(library.linkTarget(to: path, fromFolder: folder)))")
                 }
             }
@@ -171,7 +174,7 @@ final class Importer {
         dates.dateFormat = "yyyyMMdd'T'HHmmss'Z'"
         dates.timeZone = TimeZone(identifier: "UTC")
         var queue = notes.compactMap { $0 as? XMLElement }
-        report.losses.insert("шрифты и цвета текста")
+        report.losses.insert(String(localized: "шрифты и цвета текста"))
         func next() {
             guard !queue.isEmpty else { return then() }
             let note = queue.removeFirst()
@@ -186,7 +189,7 @@ final class Importer {
                       let data = Data(base64Encoded: b64, options: .ignoreUnknownCharacters) else { continue }
                 let mime = res.elements(forName: "mime").first?.stringValue ?? ""
                 let fileName = res.elements(forName: "resource-attributes").first?.elements(forName: "file-name").first?.stringValue
-                    ?? "Вложение." + (mime.components(separatedBy: "/").last ?? "bin")
+                    ?? String(localized: "Вложение") + "." + (mime.components(separatedBy: "/").last ?? "bin")
                 resources[ENEXHash.md5Hex(data)] = (data, fileName)
             }
             // <en-media hash="…"> → a picture or a link the converter understands.
@@ -195,7 +198,7 @@ final class Importer {
             content = content.replacingOccurrences(of: #"<en-media[^>]*hash="([0-9a-f]+)"[^>]*type="image/[^"]*"[^>]*/?>"#,
                                                    with: #"<img src="pero-res:$1">"#, options: .regularExpression)
             content = content.replacingOccurrences(of: #"<en-media[^>]*hash="([0-9a-f]+)"[^>]*/?>"#,
-                                                   with: #"<a href="pero-res:$1">Вложение</a>"#, options: .regularExpression)
+                                                   with: #"<a href="pero-res:$1">"# + String(localized: "Вложение") + "</a>", options: .regularExpression)
             content = content.replacingOccurrences(of: #"<en-todo\s+checked="true"\s*/?>"#, with: "<input type=\"checkbox\" checked>", options: .regularExpression)
             content = content.replacingOccurrences(of: #"<en-todo[^>]*/?>"#, with: "<input type=\"checkbox\">", options: .regularExpression)
             convert(content, into: folder, name: title, created: created, modified: updated, extraTags: tags, resources: resources) { next() }
@@ -230,7 +233,7 @@ final class Importer {
             let result = NSAppleScript(source: script)?.executeAndReturnError(&error)
             DispatchQueue.main.async {
                 guard let result else {
-                    let message = (error?[NSAppleScript.errorMessage] as? String) ?? "Не удалось обратиться к «Заметкам»."
+                    let message = (error?[NSAppleScript.errorMessage] as? String) ?? String(localized: "Не удалось обратиться к «Заметкам».")
                     return done(nil, message)
                 }
                 var items: [(String, String, String, Date?, Date?, Bool)] = []
@@ -256,13 +259,13 @@ final class Importer {
             let (folderName, title, body, created, modified, locked) = queue.removeFirst()
             if deleted.contains(folderName) { return next() }
             if locked {
-                report.skipped.append("«\(title)» (заблокирована)")
+                report.skipped.append(String(localized: "«\(title)» (заблокирована)"))
                 return next()
             }
             let target = folderName.isEmpty || folderName == "Notes" || folderName == "Заметки" ? folder
                 : folder + "/" + FileNames.baseName(forTitle: folderName)
-            report.losses.insert("шрифты и цвета текста")
-            if body.contains("<object") { report.losses.insert("вложения, которые «Заметки» не отдают через AppleScript") }
+            report.losses.insert(String(localized: "шрифты и цвета текста"))
+            if body.contains("<object") { report.losses.insert(String(localized: "вложения, которые «Заметки» не отдают через AppleScript")) }
             convert(body, into: target, name: title, created: created, modified: modified, extraTags: []) { next() }
         }
         next()
@@ -294,9 +297,9 @@ extension LibraryWindowController {
         let panel = NSOpenPanel()
         panel.allowsMultipleSelection = true
         panel.canChooseDirectories = true
-        panel.prompt = "Импортировать"
-        panel.message = "Markdown, текст, RTF, RTFD, HTML или экспорт Evernote (ENEX). Можно выбрать папку."
-        let keep = NSButton(checkboxWithTitle: "Сохранять структуру папок", target: nil, action: nil)
+        panel.prompt = String(localized: "Импортировать")
+        panel.message = String(localized: "Markdown, текст, RTF, RTFD, HTML или экспорт Evernote (ENEX). Можно выбрать папку.")
+        let keep = NSButton(checkboxWithTitle: String(localized: "Сохранять структуру папок"), target: nil, action: nil)
         keep.state = .on
         panel.accessoryView = keep
         panel.isAccessoryViewDisclosed = true
@@ -314,23 +317,23 @@ extension LibraryWindowController {
         guard let window else { return }
         switchLibrary(to: libraries.main)
         let alert = NSAlert()
-        alert.messageText = "Импортировать заметки из «Заметок» Apple?"
-        alert.informativeText = """
+        alert.messageText = String(localized: "Импортировать заметки из «Заметок» Apple?")
+        alert.informativeText = String(localized: """
             Все незаблокированные заметки будут прочитаны через AppleScript и сложены в «Импортированные заметки» \
             с папками и датами. macOS попросит разрешить управлять «Заметками» Apple. \
             Шрифты и цвета не переносятся: в Markdown их нет.
-            """
-        alert.addButton(withTitle: "Импортировать")
-        alert.addButton(withTitle: "Отменить")
+            """)
+        alert.addButton(withTitle: String(localized: "Импортировать"))
+        alert.addButton(withTitle: String(localized: "Отменить"))
         alert.beginSheetModal(for: window) { response in
             guard response == .alertFirstButtonReturn else { return }
-            let progress = ProgressSheet.show(on: window, title: "Импорт из «Заметок»…")
+            let progress = ProgressSheet.show(on: window, title: String(localized: "Импорт из «Заметок»…"))
             let importer = Importer(library: self.library, editor: self.editor)
             importer.importAppleNotes(into: Library.importedFolder, progress: { done, total in
                 progress.update(done, total)
             }, done: { report, error in
                 progress.close()
-                if let error { return self.showMessage("Импорт не удался", error) }
+                if let error { return self.showMessage(String(localized: "Импорт не удался"), error) }
                 if let report { self.importFinished(report, folder: Library.importedFolder) }
             })
         }
@@ -340,7 +343,7 @@ extension LibraryWindowController {
         library.rescan { [weak self] in
             guard let self else { return }
             if report.notes > 0 { self.showScope(folder == Library.quickFolder ? .quick : .folder(folder)) }
-            self.showMessage(report.notes > 0 ? "Импорт завершён" : "Ничего не импортировано", report.summary)
+            self.showMessage(report.notes > 0 ? String(localized: "Импорт завершён") : String(localized: "Ничего не импортировано"), report.summary)
         }
     }
 }

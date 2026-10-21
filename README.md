@@ -4,7 +4,7 @@
 
 [![Тесты](https://github.com/Dubieroj/notes-md/actions/workflows/tests.yml/badge.svg)](https://github.com/Dubieroj/notes-md/actions/workflows/tests.yml)
 
-> **In English.** Notes.md is an Apple Notes–style app for macOS where every note is a plain Markdown file on disk: folders, tags, smart folders, pinned notes, Recently Deleted, Quick Note, locked notes with Touch ID, widgets, Spotlight. The interface is in Russian. Public domain ([Unlicense](LICENSE)). Build with `./run.sh` (see below).
+> **In English.** Notes.md is an Apple Notes–style app for macOS where every note is a plain Markdown file on disk: folders, tags, smart folders, pinned notes, Recently Deleted, Quick Note, locked notes with Touch ID, widgets, Spotlight. The interface is in English and Russian, following the system language. Public domain ([Unlicense](LICENSE)). Build with `./run.sh` (see below).
 
 **Notes.md** — заметки для Mac, как «Заметки» Apple, только каждая заметка — обычный файл Markdown. Папки, смарт-папки, теги, закреплённые, «Недавно удалённые», быстрая заметка, блокировка паролем и Touch ID, виджеты, поиск в Spotlight — а данные остаются простыми `.md`-файлами, которые можно открыть любым редактором и положить в git. Работает офлайн, без аккаунтов и сети.
 
@@ -52,6 +52,7 @@
 - **Импорт**: Markdown и текст (с картинками, со структурой папок), RTF, RTFD, HTML, Evernote (ENEX), «Импорт из «Заметок» Apple» через AppleScript.
 - **Экспорт** (PDF, Markdown с вложениями, HTML одним файлом, текст) для одной заметки, нескольких или папки целиком; **печать** (⌘P); «Поделиться» и AirDrop.
 - **Копирование и вставка**: ⌘C кладёт и Markdown, и оформленный текст; вставка из браузера, Pages или Google Docs превращается в Markdown; «Скопировать как Markdown»; «Вставить и согласовать стиль» (⌥⇧⌘V).
+- **Язык интерфейса** — русский или английский, по языку системы; для остальных языков — английский. Папки, которые приложение создаёт само («Быстрые заметки», «Импортированные заметки»), в новой библиотеке называются на языке интерфейса, а в существующей остаются как были.
 - **Масштаб** текста (⇧⌘. / ⇧⌘, / ⇧⌘0), светлая и тёмная тема по системе, настройки Notes (⌘,).
 - **macOS**: заметки в Spotlight, виджеты «Заметка», «Папка», «Закреплённые», «Поделиться ▸ Заметки.md» из любого приложения, действия в «Командах» и Siri («Создай заметку в Заметках.md»), Quick Look для любого `.md` в Finder.
 

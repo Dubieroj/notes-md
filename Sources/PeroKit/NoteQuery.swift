@@ -136,7 +136,7 @@ public enum NoteSorting {
         let pinned = sorted(notes.filter { isPinned($0.path) }, by: key, ascending: ascending)
         let rest = sorted(notes.filter { !isPinned($0.path) }, by: key, ascending: ascending)
         var out: [NoteGroup] = []
-        if !pinned.isEmpty { out.append(NoteGroup(title: "Закреплённые", notes: pinned)) }
+        if !pinned.isEmpty { out.append(NoteGroup(title: PeroStrings.localize("Закреплённые"), notes: pinned)) }
         if groupByDate && key != .title {
             var order: [String] = []
             var buckets: [String: [NoteRecord]] = [:]
@@ -147,7 +147,7 @@ public enum NoteSorting {
             }
             out += order.map { NoteGroup(title: $0, notes: buckets[$0]!) }
         } else if !rest.isEmpty {
-            out.append(NoteGroup(title: pinned.isEmpty ? "" : "Заметки", notes: rest))
+            out.append(NoteGroup(title: pinned.isEmpty ? "" : PeroStrings.localize("Заметки"), notes: rest))
         }
         return out
     }
@@ -157,10 +157,10 @@ public enum NoteSorting {
         let today = cal.startOfDay(for: now)
         let day = cal.startOfDay(for: date)
         let days = cal.dateComponents([.day], from: day, to: today).day ?? 0
-        if days <= 0 { return "Сегодня" }
-        if days == 1 { return "Вчера" }
-        if days <= 7 { return "Предыдущие 7 дней" }
-        if days <= 30 { return "Предыдущие 30 дней" }
+        if days <= 0 { return PeroStrings.localize("Сегодня") }
+        if days == 1 { return PeroStrings.localize("Вчера") }
+        if days <= 7 { return PeroStrings.localize("Предыдущие 7 дней") }
+        if days <= 30 { return PeroStrings.localize("Предыдущие 30 дней") }
         if cal.component(.year, from: date) == cal.component(.year, from: now) {
             return monthFormatter.string(from: date).capitalized(with: monthFormatter.locale)
         }
@@ -169,7 +169,7 @@ public enum NoteSorting {
 
     private static let monthFormatter: DateFormatter = {
         let f = DateFormatter()
-        f.locale = Locale(identifier: "ru_RU")
+        f.locale = PeroStrings.locale
         f.dateFormat = "LLLL"
         return f
     }()

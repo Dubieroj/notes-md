@@ -1,7 +1,8 @@
 import Foundation
 
 public enum FileNames {
-    public static let untitled = "Новая заметка"
+    /// The name of a note without a title; the app sets it in the interface language.
+    public static var untitled = "Новая заметка"
 
     /// File name (without extension) for a note title: «/» and «:» become «-», no leading
     /// dots, at most ~200 bytes so a « 99» suffix and the extension still fit in 255.

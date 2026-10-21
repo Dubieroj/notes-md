@@ -1,4 +1,5 @@
 // Word and character counts for the status line.
+import {getLang, t} from "./i18n.js"
 
 function plural(n, one, few, many) {
   const m10 = n % 10, m100 = n % 100
@@ -6,6 +7,11 @@ function plural(n, one, few, many) {
   if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return few
   return many
 }
+
+// English has one form for 1 and another for the rest.
+const ru = () => getLang() === "ru"
+const wordsWord = (n) => (ru() ? plural(n, "слово", "слова", "слов") : n === 1 ? "word" : "words")
+const charsWord = (n) => (ru() ? plural(n, "символ", "символа", "символов") : n === 1 ? "character" : "characters")
 
 const wordRe = /[\p{L}\p{N}]+(?:['’\-][\p{L}\p{N}]+)*/gu
 
@@ -21,7 +27,7 @@ export function countChars(text) {
   return text.replace(/\n/g, "").length
 }
 
-const fmt = (n) => n.toLocaleString("ru-RU")
+const fmt = (n) => n.toLocaleString(ru() ? "ru-RU" : "en-US")
 
 export function statsLabel(state) {
   const sel = state.selection.ranges.reduce((s, r) => (r.empty ? s : s + state.sliceDoc(r.from, r.to) + "\n"), "")
@@ -29,10 +35,12 @@ export function statsLabel(state) {
   const words = countWords(text)
   if (sel) {
     const w = countWords(sel)
-    return `Выделено ${fmt(w)} ${plural(w, "слово", "слова", "слов")} из ${fmt(words)}`
+    return ru()
+      ? `Выделено ${fmt(w)} ${wordsWord(w)} из ${fmt(words)}`
+      : `${fmt(w)} of ${fmt(words)} ${wordsWord(words)} selected`
   }
   const chars = countChars(text)
   // Reading time at about 200 words a minute.
   const minutes = Math.max(1, Math.ceil(words / 200))
-  return `${fmt(words)} ${plural(words, "слово", "слова", "слов")} · ${fmt(chars)} ${plural(chars, "символ", "символа", "символов")} · ${minutes} мин чтения`
+  return `${fmt(words)} ${wordsWord(words)} · ${fmt(chars)} ${charsWord(chars)} · ${minutes} ${t("мин чтения")}`
 }

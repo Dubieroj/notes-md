@@ -4,6 +4,7 @@ import {EditorView} from "@codemirror/view"
 import {htmlToMarkdown} from "./htmlmd.js"
 import {exportFragment} from "./export.js"
 import {post} from "./ctx.js"
+import {t} from "./i18n.js"
 
 const ownType = "application/x-pero-markdown"
 
@@ -34,7 +35,7 @@ function readFile(file) {
 export async function sendFiles(files, pos) {
   for (const file of files) {
     const data = await readFile(file)
-    if (data) post({type: "attachFile", name: file.name || "Вставка", mime: file.type, data, pos})
+    if (data) post({type: "attachFile", name: file.name || t("Вставка"), mime: file.type, data, pos})
   }
 }
 

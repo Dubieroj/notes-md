@@ -36,14 +36,14 @@ final class Libraries {
 
         var errorDescription: String? {
             switch self {
-            case .overlaps: return "Эта папка пересекается с библиотекой заметок"
-            case .alreadyLinked: return "Эта папка уже подключена"
+            case .overlaps: return String(localized: "Эта папка пересекается с библиотекой заметок")
+            case .alreadyLinked: return String(localized: "Эта папка уже подключена")
             }
         }
 
         var recoverySuggestion: String? {
             switch self {
-            case .overlaps: return "Нельзя подключить папку библиотеки, папку внутри неё или папку, в которой она лежит."
+            case .overlaps: return String(localized: "Нельзя подключить папку библиотеки, папку внутри неё или папку, в которой она лежит.")
             case .alreadyLinked: return nil
             }
         }

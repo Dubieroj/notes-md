@@ -22,6 +22,7 @@ import {phrases} from "./phrases.js"
 import {pasteAndCopy} from "./clipboard.js"
 import {completion} from "./complete.js"
 import {htmlToMarkdown} from "./htmlmd.js"
+import {setLang, getLang, t} from "./i18n.js"
 
 // ⌘/ switches to source mode in the app menu, so it is not "toggle comment" here.
 const baseKeymap = defaultKeymap.filter((binding) => binding.key !== "Mod-/")
@@ -37,6 +38,14 @@ const modeExtension = (m) =>
     ? EditorView.editorAttributes.of({class: "cm-source"})
     : [livePreview, EditorView.editorAttributes.of({class: "cm-live"})]
 const editableExtension = (ro) => [EditorState.readOnly.of(ro), EditorView.editable.of(!ro)]
+// The placeholder and CodeMirror's own panels follow the interface language, which
+// arrives with configure() after the first state exists. English needs no phrases.
+const language = new Compartment()
+const languageExtension = () => [
+  placeholder(t("Начните писать…")),
+  getLang() === "ru" ? EditorState.phrases.of(phrases) : [],
+]
+let currentLanguage = languageExtension()
 
 // ---------- debounced side panels ----------
 
@@ -97,8 +106,7 @@ function makeState(text) {
       drawSelection(),
       dropCursor(),
       EditorView.lineWrapping,
-      placeholder("Начните писать…"),
-      EditorState.phrases.of(phrases),
+      language.of(currentLanguage),
       EditorView.contentAttributes.of({spellcheck: "true", autocorrect: "off", autocapitalize: "off"}),
       markdown({base: commonmarkLanguage, extensions: [GFM, notesSyntax], codeLanguages: languages, completeHTMLTags: false}),
       highlighting,
@@ -162,11 +170,12 @@ function patch(text) {
   view.dispatch({changes: {from: start, to: endA, insert: text.slice(start, endB)}, annotations: External.of(true)})
 }
 
-// A state from the cache may predate a mode switch: bring it up to date.
+// A state from the cache may predate a mode or language switch: bring it up to date.
 function refreshConfig(header) {
   view.dispatch({effects: [
     mode.reconfigure(modeExtension(currentMode)),
     editable.reconfigure(editableExtension(readOnly)),
+    language.reconfigure(currentLanguage),
     setHeader.of(header ?? ""),
   ]})
 }
@@ -177,6 +186,12 @@ window.pero = {
     document.body.classList.toggle("notes", !!ctx.notes)
     document.body.classList.toggle("show-stats", !!ctx.showStats)
     if (options.zoom) document.documentElement.style.setProperty("--zoom", String(options.zoom))
+    if (options.lang && options.lang !== getLang()) {
+      setLang(options.lang)
+      currentLanguage = languageExtension()
+      view.dispatch({effects: language.reconfigure(currentLanguage)})
+      updateStats()
+    }
     view.requestMeasure()
   },
   load(text, {baseDir = null, keepView = false, key = null, header = null, readOnly: ro = false, focus = false} = {}) {

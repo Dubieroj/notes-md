@@ -29,7 +29,7 @@ struct FolderEntity: AppEntity {
     static var defaultQuery = FolderQuery()
     var id: String
     var displayRepresentation: DisplayRepresentation {
-        DisplayRepresentation(title: "\(id.isEmpty ? "Заметки" : (id as NSString).lastPathComponent)")
+        DisplayRepresentation(title: id.isEmpty ? "Заметки" : "\((id as NSString).lastPathComponent)")
     }
 }
 
@@ -65,7 +65,7 @@ private func entry(notes: [WidgetSnapshot.Note], title: String, link: URL) -> Ti
 
 struct NoteProvider: AppIntentTimelineProvider {
     func placeholder(in context: Context) -> NotesEntry {
-        NotesEntry(date: Date(), notes: [], title: "Заметка", link: PeroLinks.newNote())
+        NotesEntry(date: Date(), notes: [], title: String(localized: "Заметка"), link: PeroLinks.newNote())
     }
 
     func snapshot(for configuration: NoteWidgetIntent, in context: Context) async -> NotesEntry {
@@ -75,14 +75,14 @@ struct NoteProvider: AppIntentTimelineProvider {
     func timeline(for configuration: NoteWidgetIntent, in context: Context) async -> Timeline<NotesEntry> {
         let notes = WidgetSnapshot.load()?.notes ?? []
         let note = configuration.note.flatMap { n in notes.first { $0.path == n.id } } ?? notes.first
-        return entry(notes: note.map { [$0] } ?? [], title: note?.title ?? "Нет заметок",
+        return entry(notes: note.map { [$0] } ?? [], title: note?.title ?? String(localized: "Нет заметок"),
                      link: note.map { PeroLinks.note($0.path) } ?? PeroLinks.newNote())
     }
 }
 
 struct FolderProvider: AppIntentTimelineProvider {
     func placeholder(in context: Context) -> NotesEntry {
-        NotesEntry(date: Date(), notes: [], title: "Заметки", link: PeroLinks.newNote())
+        NotesEntry(date: Date(), notes: [], title: String(localized: "Заметки"), link: PeroLinks.newNote())
     }
 
     func snapshot(for configuration: FolderWidgetIntent, in context: Context) async -> NotesEntry {
@@ -92,14 +92,14 @@ struct FolderProvider: AppIntentTimelineProvider {
     func timeline(for configuration: FolderWidgetIntent, in context: Context) async -> Timeline<NotesEntry> {
         let folder = configuration.folder?.id ?? ""
         let notes = (WidgetSnapshot.load()?.notes ?? []).filter { $0.folder == folder }.sorted { $0.modified > $1.modified }
-        let title = folder.isEmpty ? "Заметки" : (folder as NSString).lastPathComponent
+        let title = folder.isEmpty ? String(localized: "Заметки") : (folder as NSString).lastPathComponent
         return entry(notes: Array(notes.prefix(8)), title: title, link: PeroLinks.newNote(folder: folder))
     }
 }
 
 struct PinnedProvider: TimelineProvider {
     func placeholder(in context: Context) -> NotesEntry {
-        NotesEntry(date: Date(), notes: [], title: "Закреплённые", link: PeroLinks.newNote())
+        NotesEntry(date: Date(), notes: [], title: String(localized: "Закреплённые"), link: PeroLinks.newNote())
     }
 
     func getSnapshot(in context: Context, completion: @escaping (NotesEntry) -> Void) {
@@ -108,7 +108,7 @@ struct PinnedProvider: TimelineProvider {
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<NotesEntry>) -> Void) {
         let notes = (WidgetSnapshot.load()?.notes ?? []).filter(\.pinned).sorted { $0.modified > $1.modified }
-        completion(entry(notes: Array(notes.prefix(8)), title: "Закреплённые", link: PeroLinks.newNote()))
+        completion(entry(notes: Array(notes.prefix(8)), title: String(localized: "Закреплённые"), link: PeroLinks.newNote()))
     }
 }
 

@@ -113,14 +113,14 @@ final class SidebarController: NSViewController, NSOutlineViewDataSource, NSOutl
         let menu = NSMenu()
         menu.delegate = self
         outline.menu = menu
-        outline.setAccessibilityLabel("Папки")
+        outline.setAccessibilityLabel(String(localized: "Папки"))
         scroll.documentView = outline
 
-        let newFolder = NSButton(title: "Новая папка", image: NSImage(systemSymbolName: "plus.circle", accessibilityDescription: nil)!,
+        let newFolder = NSButton(title: String(localized: "Новая папка"), image: NSImage(systemSymbolName: "plus.circle", accessibilityDescription: nil)!,
                                  target: nil, action: #selector(LibraryWindowController.newFolder(_:)))
-        let link = NSButton(title: "Папка с диска", image: NSImage(systemSymbolName: "folder.badge.plus", accessibilityDescription: nil)!,
+        let link = NSButton(title: String(localized: "Папка с диска"), image: NSImage(systemSymbolName: "folder.badge.plus", accessibilityDescription: nil)!,
                             target: nil, action: #selector(LibraryWindowController.linkFolder(_:)))
-        link.toolTip = "Показать здесь любую папку с Markdown-файлами"
+        link.toolTip = String(localized: "Показать здесь любую папку с Markdown-файлами")
         for button in [newFolder, link] {
             button.bezelStyle = .accessoryBarAction
             button.isBordered = false
@@ -165,21 +165,21 @@ final class SidebarController: NSViewController, NSOutlineViewDataSource, NSOutl
     private func smartAndTrash(_ library: Library) -> [SidebarItem] {
         var out = library.state.smartFolders.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
             .map { SidebarItem(.smart($0.id), $0.name, library) }
-        if !library.trash.isEmpty { out.append(SidebarItem(.trash, "Недавно удалённые", library)) }
+        if !library.trash.isEmpty { out.append(SidebarItem(.trash, String(localized: "Недавно удалённые"), library)) }
         return out
     }
 
     private func buildTree() -> [SidebarItem] {
         let main = libraries.main
-        var out: [SidebarItem] = [SidebarItem(.quick, "Быстрые заметки", main)]
-        let section = SidebarItem(.section("На Mac"), "На Mac", main)
-        section.children.append(SidebarItem(.all, "Все заметки", main))
-        section.children.append(SidebarItem(.folder(""), "Заметки", main))
+        var out: [SidebarItem] = [SidebarItem(.quick, String(localized: "Быстрые заметки"), main)]
+        let section = SidebarItem(.section("На Mac"), String(localized: "На Mac"), main)
+        section.children.append(SidebarItem(.all, String(localized: "Все заметки"), main))
+        section.children.append(SidebarItem(.folder(""), String(localized: "Заметки"), main))
         section.children += folderTree(main)
         section.children += smartAndTrash(main)
         out.append(section)
         if !libraries.linked.isEmpty {
-            let disk = SidebarItem(.section("Папки на диске"), "Папки на диске", main)
+            let disk = SidebarItem(.section("Папки на диске"), String(localized: "Папки на диске"), main)
             for library in libraries.linked {
                 let root = SidebarItem(.folder(""), library.root.lastPathComponent, library)
                 root.isLinkedRoot = true
@@ -190,9 +190,9 @@ final class SidebarController: NSViewController, NSOutlineViewDataSource, NSOutl
         }
         let tags = current.tagCounts()
         if !tags.isEmpty {
-            let title = current === main ? "Теги" : "Теги · " + current.root.lastPathComponent
+            let title = current === main ? String(localized: "Теги") : String(localized: "Теги · \(current.root.lastPathComponent)")
             let t = SidebarItem(.section(title), title, current)
-            t.children.append(SidebarItem(.allTags, "Все теги", current))
+            t.children.append(SidebarItem(.allTags, String(localized: "Все теги"), current))
             t.children += tags.map { SidebarItem(.tag($0.tag), "#" + $0.tag, current) }
             out.append(t)
         }
@@ -295,7 +295,7 @@ final class SidebarController: NSViewController, NSOutlineViewDataSource, NSOutl
 
     func outlineView(_ outlineView: NSOutlineView, viewFor tableColumn: NSTableColumn?, item: Any) -> NSView? {
         guard let item = item as? SidebarItem else { return nil }
-        if case .section(let title) = item.kind {
+        if case .section = item.kind {
             let cell = outlineView.makeView(withIdentifier: .init("header"), owner: self) as? NSTableCellView ?? {
                 let c = NSTableCellView()
                 c.identifier = .init("header")
@@ -309,7 +309,7 @@ final class SidebarController: NSViewController, NSOutlineViewDataSource, NSOutl
                                              t.centerYAnchor.constraint(equalTo: c.centerYAnchor)])
                 return c
             }()
-            cell.textField?.stringValue = title
+            cell.textField?.stringValue = item.title
             return cell
         }
         let cell = outlineView.makeView(withIdentifier: .init("item"), owner: self) as? SidebarCell ?? SidebarCell()
@@ -377,7 +377,8 @@ final class SidebarController: NSViewController, NSOutlineViewDataSource, NSOutl
         case .folder(let path):
             guard Library.isValidFolderName(name) else {
                 field.stringValue = item.title
-                actions?.showMessage("Такое название не подходит для папки", "Название не может быть пустым, начинаться с точки или содержать «/» и «:».")
+                actions?.showMessage(String(localized: "Такое название не подходит для папки"),
+                                     String(localized: "Название не может быть пустым, начинаться с точки или содержать «/» и «:»."))
                 return
             }
             if let newPath = try? library.renameFolder(path, to: name), library === current, selectedScope == .folder(path) {
@@ -400,8 +401,8 @@ final class SidebarController: NSViewController, NSOutlineViewDataSource, NSOutl
         let row = outline.clickedRow
         guard row >= 0, let item = outline.item(atRow: row) as? SidebarItem else { return }
         let library = item.library
-        func add(_ title: String, _ action: @escaping () -> Void) {
-            menu.addItem(ClosureMenuItem(title: title, action: action))
+        func add(_ title: String.LocalizationValue, _ action: @escaping () -> Void) {
+            menu.addItem(ClosureMenuItem(title: String(localized: title), action: action))
         }
         switch item.kind {
         case .folder(let path):
@@ -431,7 +432,7 @@ final class SidebarController: NSViewController, NSOutlineViewDataSource, NSOutl
         case .tag(let tag):
             add("Переименовать тег…") { [weak self] in self?.actions?.renameTag(tag) }
             add("Удалить тег…") { [weak self] in self?.actions?.deleteTag(tag) }
-            let colors = NSMenuItem(title: "Цвет", action: nil, keyEquivalent: "")
+            let colors = NSMenuItem(title: String(localized: "Цвет"), action: nil, keyEquivalent: "")
             let sub = NSMenu()
             for (name, hex) in TagColors.all {
                 let i = ClosureMenuItem(title: name) { library.setTagColor(tag, hex) }
@@ -452,10 +453,10 @@ final class SidebarController: NSViewController, NSOutlineViewDataSource, NSOutl
     }
 
     private func sortMenu(for folder: String, in library: Library) -> NSMenuItem {
-        let item = NSMenuItem(title: "Сортировать по", action: nil, keyEquivalent: "")
+        let item = NSMenuItem(title: String(localized: "Сортировать по"), action: nil, keyEquivalent: "")
         let sub = NSMenu()
         let current = library.settings(for: folder)
-        let def = ClosureMenuItem(title: "По умолчанию") {
+        let def = ClosureMenuItem(title: String(localized: "По умолчанию")) {
             var s = library.settings(for: folder)
             s.sort = nil; s.ascending = nil
             library.setSettings(s, for: folder)
@@ -463,7 +464,7 @@ final class SidebarController: NSViewController, NSOutlineViewDataSource, NSOutl
         def.state = current.sort == nil ? .on : .off
         sub.addItem(def)
         sub.addItem(.separator())
-        for (key, title) in [(SortKey.modified, "Дата изменения"), (.created, "Дата создания"), (.title, "Название")] {
+        for (key, title) in [(SortKey.modified, String(localized: "Дата изменения")), (.created, String(localized: "Дата создания")), (.title, String(localized: "Название"))] {
             let i = ClosureMenuItem(title: title) {
                 var s = library.settings(for: folder)
                 s.sort = key
@@ -476,7 +477,8 @@ final class SidebarController: NSViewController, NSOutlineViewDataSource, NSOutl
         if current.sort != nil {
             sub.addItem(.separator())
             let asc = current.ascending ?? false
-            for (value, title) in [(false, current.sort == .title ? "От Я до А" : "Сначала новые"), (true, current.sort == .title ? "От А до Я" : "Сначала старые")] {
+            for (value, title) in [(false, current.sort == .title ? String(localized: "От Я до А") : String(localized: "Сначала новые")),
+                                  (true, current.sort == .title ? String(localized: "От А до Я") : String(localized: "Сначала старые"))] {
                 let i = ClosureMenuItem(title: title) {
                     var s = library.settings(for: folder)
                     s.ascending = value
@@ -491,10 +493,10 @@ final class SidebarController: NSViewController, NSOutlineViewDataSource, NSOutl
     }
 
     private func groupMenu(for folder: String, in library: Library) -> NSMenuItem {
-        let item = NSMenuItem(title: "Группировать по дате", action: nil, keyEquivalent: "")
+        let item = NSMenuItem(title: String(localized: "Группировать по дате"), action: nil, keyEquivalent: "")
         let sub = NSMenu()
         let current = library.settings(for: folder).groupByDate
-        for (value, title) in [(nil as Bool?, "По умолчанию"), (true, "Вкл."), (false, "Выкл.")] {
+        for (value, title) in [(nil as Bool?, String(localized: "По умолчанию")), (true, String(localized: "Вкл.")), (false, String(localized: "Выкл."))] {
             let i = ClosureMenuItem(title: title) {
                 var s = library.settings(for: folder)
                 s.groupByDate = value
@@ -644,8 +646,10 @@ final class ClosureMenuItem: NSMenuItem {
 
 enum TagColors {
     static let all: [(String, String?)] = [
-        ("Без цвета", nil), ("Красный", "#E5484D"), ("Оранжевый", "#F76B15"), ("Жёлтый", "#E2A336"),
-        ("Зелёный", "#30A46C"), ("Голубой", "#0090FF"), ("Фиолетовый", "#8E4EC6"), ("Серый", "#8B8D98"),
+        (String(localized: "Без цвета"), nil), (String(localized: "Красный"), "#E5484D"),
+        (String(localized: "Оранжевый"), "#F76B15"), (String(localized: "Жёлтый"), "#E2A336"),
+        (String(localized: "Зелёный"), "#30A46C"), (String(localized: "Голубой"), "#0090FF"),
+        (String(localized: "Фиолетовый"), "#8E4EC6"), (String(localized: "Серый"), "#8B8D98"),
     ]
 }
 

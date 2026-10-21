@@ -41,7 +41,7 @@ public struct NoteRecord: Hashable, Sendable {
     /// Folder path relative to the root; "" is the root («Заметки»).
     public var folder: String { (path as NSString).deletingLastPathComponent }
     public var fileName: String { (path as NSString).lastPathComponent }
-    public var displayTitle: String { title.isEmpty ? "Новая заметка" : title }
+    public var displayTitle: String { title.isEmpty ? FileNames.untitled : title }
     public var isQuickNote: Bool { folder == Library.quickFolder }
 
     public func hasTag(_ tag: String) -> Bool {

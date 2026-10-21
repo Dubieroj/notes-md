@@ -74,7 +74,7 @@ final class InboxReader {
                 let isImage = FileTypes.isImage(name)
                 text += (text.isEmpty ? "" : "\n\n") + (isImage ? "![](\(target))" : "[\(name)](\(target))")
             }
-            if text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { text = "Из «Поделиться»" }
+            if text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { text = String(localized: "Из «Поделиться»") }
             if (try? library.createNote(in: folder, text: text, created: item.created)) != nil {
                 try? fm.removeItem(at: dir)
             }

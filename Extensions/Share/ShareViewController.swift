@@ -5,7 +5,7 @@ import UniformTypeIdentifiers
 /// (or a Quick Note). The note waits in the shared inbox until Перо picks it up.
 final class ShareViewController: NSViewController {
     private let textView = NSTextView()
-    private let quick = NSButton(checkboxWithTitle: "В быструю заметку", target: nil, action: nil)
+    private let quick = NSButton(checkboxWithTitle: String(localized: "В быструю заметку"), target: nil, action: nil)
     private var files: [URL] = []
     private let status = NSTextField(labelWithString: "")
 
@@ -13,7 +13,7 @@ final class ShareViewController: NSViewController {
 
     override func loadView() {
         let root = NSView(frame: NSRect(x: 0, y: 0, width: 420, height: 300))
-        let title = NSTextField(labelWithString: "Новая заметка в Заметках.md")
+        let title = NSTextField(labelWithString: String(localized: "Новая заметка в Заметках.md"))
         title.font = .boldSystemFont(ofSize: 13)
         let scroll = NSScrollView()
         scroll.documentView = textView
@@ -23,9 +23,9 @@ final class ShareViewController: NSViewController {
         textView.font = .systemFont(ofSize: 13)
         textView.autoresizingMask = [.width]
         status.textColor = .secondaryLabelColor
-        let cancel = NSButton(title: "Отменить", target: self, action: #selector(cancel(_:)))
+        let cancel = NSButton(title: String(localized: "Отменить"), target: self, action: #selector(cancel(_:)))
         cancel.keyEquivalent = "\u{1b}"
-        let save = NSButton(title: "Сохранить", target: self, action: #selector(save(_:)))
+        let save = NSButton(title: String(localized: "Сохранить"), target: self, action: #selector(save(_:)))
         save.keyEquivalent = "\r"
         for v in [title, scroll, quick, status, cancel, save] { v.translatesAutoresizingMaskIntoConstraints = false; root.addSubview(v) }
         NSLayoutConstraint.activate([
@@ -86,7 +86,7 @@ final class ShareViewController: NSViewController {
         }
         group.notify(queue: .main) {
             self.textView.string = parts.joined(separator: "\n\n")
-            if !self.files.isEmpty { self.status.stringValue = "Файлов: \(self.files.count)" }
+            if !self.files.isEmpty { self.status.stringValue = String(localized: "Файлов: \(self.files.count)") }
         }
     }
 

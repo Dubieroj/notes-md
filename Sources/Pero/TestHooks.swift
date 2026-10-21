@@ -134,6 +134,11 @@ enum TestHooks {
         case "app":
             // An app-level menu command (settings, quick note…), through the responder chain.
             done(NSApp.sendAction(Selector(arg), to: nil, from: NSMenuItem()))
+        case "menus":
+            // Top-level menus with their items, to check the interface language.
+            done((NSApp.mainMenu?.items ?? []).map { top in
+                [top.submenu?.title ?? top.title] + (top.submenu?.items ?? []).filter { !$0.isSeparatorItem }.map(\.title)
+            })
         case "allWindows":
             done(NSApp.windows.filter(\.isVisible).map { ["title": $0.title, "window": $0.windowNumber, "class": String(describing: type(of: $0))] })
         case "scrollToEnd":

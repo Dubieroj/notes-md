@@ -11,7 +11,7 @@ enum TextPrompt {
         field.frame = NSRect(x: 0, y: 0, width: 280, height: 24)
         alert.accessoryView = field
         alert.addButton(withTitle: confirm)
-        alert.addButton(withTitle: "Отменить")
+        alert.addButton(withTitle: String(localized: "Отменить"))
         alert.window.initialFirstResponder = field
         alert.beginSheetModal(for: window) { response in
             if response == .alertFirstButtonReturn { done(field.stringValue) }
@@ -23,25 +23,25 @@ enum PasswordSheet {
     /// First lock: create the password for locked notes, with a hint (as in Notes).
     static func create(on window: NSWindow, done: @escaping (String, String?) -> Void) {
         let alert = NSAlert()
-        alert.messageText = "Создайте пароль для заблокированных заметок"
-        alert.informativeText = "Им открываются все заблокированные заметки. Если забыть пароль и Touch ID недоступен, прочитать их будет нельзя."
+        alert.messageText = String(localized: "Создайте пароль для заблокированных заметок")
+        alert.informativeText = String(localized: "Им открываются все заблокированные заметки. Если забыть пароль и Touch ID недоступен, прочитать их будет нельзя.")
         let password = NSSecureTextField(frame: NSRect(x: 0, y: 58, width: 280, height: 24))
-        password.placeholderString = "Пароль"
+        password.placeholderString = String(localized: "Пароль")
         let repeatField = NSSecureTextField(frame: NSRect(x: 0, y: 29, width: 280, height: 24))
-        repeatField.placeholderString = "Подтверждение"
+        repeatField.placeholderString = String(localized: "Подтверждение")
         let hint = NSTextField(frame: NSRect(x: 0, y: 0, width: 280, height: 24))
-        hint.placeholderString = "Подсказка (рекомендуется)"
+        hint.placeholderString = String(localized: "Подсказка (рекомендуется)")
         let box = NSView(frame: NSRect(x: 0, y: 0, width: 280, height: 82))
         [password, repeatField, hint].forEach(box.addSubview)
         alert.accessoryView = box
-        alert.addButton(withTitle: "Задать пароль")
-        alert.addButton(withTitle: "Отменить")
+        alert.addButton(withTitle: String(localized: "Задать пароль"))
+        alert.addButton(withTitle: String(localized: "Отменить"))
         alert.window.initialFirstResponder = password
         alert.beginSheetModal(for: window) { response in
             guard response == .alertFirstButtonReturn else { return }
             guard !password.stringValue.isEmpty, password.stringValue == repeatField.stringValue else {
                 let error = NSAlert()
-                error.messageText = password.stringValue.isEmpty ? "Пароль не может быть пустым" : "Пароли не совпадают"
+                error.messageText = password.stringValue.isEmpty ? String(localized: "Пароль не может быть пустым") : String(localized: "Пароли не совпадают")
                 error.beginSheetModal(for: window) { _ in create(on: window, done: done) }
                 return
             }
@@ -52,12 +52,12 @@ enum PasswordSheet {
     /// The password, asked again until it is right or the user gives up.
     static func enter(on window: NSWindow, hint: String?, check: @escaping (String) -> Bool) {
         let alert = NSAlert()
-        alert.messageText = "Введите пароль для заблокированных заметок"
-        alert.informativeText = hint.map { "Подсказка: \($0)" } ?? ""
+        alert.messageText = String(localized: "Введите пароль для заблокированных заметок")
+        alert.informativeText = hint.map { String(localized: "Подсказка: \($0)") } ?? ""
         let field = NSSecureTextField(frame: NSRect(x: 0, y: 0, width: 260, height: 24))
         alert.accessoryView = field
         alert.addButton(withTitle: "OK")
-        alert.addButton(withTitle: "Отменить")
+        alert.addButton(withTitle: String(localized: "Отменить"))
         alert.window.initialFirstResponder = field
         alert.beginSheetModal(for: window) { response in
             guard response == .alertFirstButtonReturn else { return }
@@ -69,20 +69,20 @@ enum PasswordSheet {
 
     static func change(on window: NSWindow, done: @escaping (String, String, String?) -> Void) {
         let alert = NSAlert()
-        alert.messageText = "Изменить пароль для заблокированных заметок"
+        alert.messageText = String(localized: "Изменить пароль для заблокированных заметок")
         let old = NSSecureTextField(frame: NSRect(x: 0, y: 87, width: 280, height: 24))
-        old.placeholderString = "Старый пароль"
+        old.placeholderString = String(localized: "Старый пароль")
         let new = NSSecureTextField(frame: NSRect(x: 0, y: 58, width: 280, height: 24))
-        new.placeholderString = "Новый пароль"
+        new.placeholderString = String(localized: "Новый пароль")
         let repeatField = NSSecureTextField(frame: NSRect(x: 0, y: 29, width: 280, height: 24))
-        repeatField.placeholderString = "Подтверждение"
+        repeatField.placeholderString = String(localized: "Подтверждение")
         let hint = NSTextField(frame: NSRect(x: 0, y: 0, width: 280, height: 24))
-        hint.placeholderString = "Подсказка"
+        hint.placeholderString = String(localized: "Подсказка")
         let box = NSView(frame: NSRect(x: 0, y: 0, width: 280, height: 111))
         [old, new, repeatField, hint].forEach(box.addSubview)
         alert.accessoryView = box
-        alert.addButton(withTitle: "Изменить")
-        alert.addButton(withTitle: "Отменить")
+        alert.addButton(withTitle: String(localized: "Изменить"))
+        alert.addButton(withTitle: String(localized: "Отменить"))
         alert.window.initialFirstResponder = old
         alert.beginSheetModal(for: window) { response in
             guard response == .alertFirstButtonReturn, !new.stringValue.isEmpty, new.stringValue == repeatField.stringValue else { return }
@@ -95,22 +95,22 @@ enum PasswordSheet {
 enum LinkSheet {
     static func present(on window: NSWindow, text: String, url: String, done: @escaping (String, String) -> Void) {
         let alert = NSAlert()
-        alert.messageText = url.isEmpty ? "Добавить ссылку" : "Изменить ссылку"
+        alert.messageText = url.isEmpty ? String(localized: "Добавить ссылку") : String(localized: "Изменить ссылку")
         let textField = NSTextField(frame: NSRect(x: 64, y: 30, width: 260, height: 24))
         textField.stringValue = text
-        textField.placeholderString = "Текст ссылки"
+        textField.placeholderString = String(localized: "Текст ссылки")
         let urlField = NSTextField(frame: NSRect(x: 64, y: 0, width: 260, height: 24))
         urlField.stringValue = url
-        urlField.placeholderString = "https://… или [[Заметка]]"
-        let l1 = NSTextField(labelWithString: "Текст:")
+        urlField.placeholderString = String(localized: "https://… или [[Заметка]]")
+        let l1 = NSTextField(labelWithString: String(localized: "Текст:"))
         l1.frame = NSRect(x: 0, y: 33, width: 60, height: 18)
-        let l2 = NSTextField(labelWithString: "Адрес:")
+        let l2 = NSTextField(labelWithString: String(localized: "Адрес:"))
         l2.frame = NSRect(x: 0, y: 3, width: 60, height: 18)
         let box = NSView(frame: NSRect(x: 0, y: 0, width: 324, height: 56))
         [l1, textField, l2, urlField].forEach(box.addSubview)
         alert.accessoryView = box
         alert.addButton(withTitle: "OK")
-        alert.addButton(withTitle: "Отменить")
+        alert.addButton(withTitle: String(localized: "Отменить"))
         alert.window.initialFirstResponder = url.isEmpty && !text.isEmpty ? urlField : textField
         alert.beginSheetModal(for: window) { response in
             guard response == .alertFirstButtonReturn else { return }
@@ -155,7 +155,7 @@ final class ProgressSheet {
         bar.isIndeterminate = false
         bar.maxValue = Double(total)
         bar.doubleValue = Double(done)
-        label.stringValue = "\(done) из \(total)"
+        label.stringValue = String(localized: "\(done) из \(total)")
     }
 
     func close() { parent?.endSheet(panel) }

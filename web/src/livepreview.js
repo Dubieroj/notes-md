@@ -6,6 +6,7 @@ import {syntaxTree, codeFolding, foldable, foldEffect, unfoldEffect, foldedRange
 import {ctx, resolveImageURL, openLink, localPath, post} from "./ctx.js"
 import {renderInline} from "./inline.js"
 import {sortChecklistAt} from "./notes.js"
+import {t} from "./i18n.js"
 
 // Markup is revealed only while the editor has focus, so a freshly opened
 // document (cursor at 0) looks fully rendered.
@@ -95,7 +96,7 @@ class TaskWidget extends WidgetType {
     box.className = "cm-task-box" + (this.checked ? " cm-task-checked" : "")
     box.setAttribute("role", "checkbox")
     box.setAttribute("aria-checked", String(this.checked))
-    box.setAttribute("aria-label", this.checked ? "Выполнено" : "Не выполнено")
+    box.setAttribute("aria-label", this.checked ? t("Выполнено") : t("Не выполнено"))
     box.addEventListener("mousedown", (e) => {
       e.preventDefault()
       if (view.state.readOnly) return
@@ -160,14 +161,14 @@ class ImageWidget extends WidgetType {
     img.onload = () => view.requestMeasure()
     img.onerror = () => {
       wrap.className = "cm-image cm-image-broken"
-      wrap.textContent = (/^https?:/i.test(this.src) ? "Картинка из интернета не загружается: " : "Нет картинки: ") + (this.alt || this.src)
+      wrap.textContent = (/^https?:/i.test(this.src) ? t("Картинка из интернета не загружается: ") : t("Нет картинки: ")) + (this.alt || this.src)
       view.requestMeasure()
     }
     wrap.appendChild(img)
     if (!view.state.readOnly) {
       const handle = document.createElement("span")
       handle.className = "cm-image-handle"
-      handle.title = "Изменить размер"
+      handle.title = t("Изменить размер")
       handle.addEventListener("mousedown", (e) => {
         e.preventDefault()
         e.stopPropagation()
@@ -205,7 +206,7 @@ class FileWidget extends WidgetType {
     name.className = "cm-file-name"
     name.textContent = this.label || decodeURIComponent(this.href.split("/").pop())
     card.append(icon, name)
-    card.title = "Открыть вложение"
+    card.title = t("Открыть вложение")
     card.addEventListener("mousedown", (e) => { e.preventDefault(); openLink(this.href) })
     return card
   }
@@ -709,7 +710,7 @@ class FoldMarker extends GutterMarker {
     const span = document.createElement("span")
     span.className = "cm-fold-marker" + (this.open ? "" : " cm-folded")
     span.textContent = "›"
-    span.title = this.open ? "Свернуть раздел" : "Развернуть раздел"
+    span.title = this.open ? t("Свернуть раздел") : t("Развернуть раздел")
     return span
   }
 }
@@ -755,7 +756,7 @@ const sectionFolding = codeFolding({
     const span = document.createElement("span")
     span.className = "cm-foldPlaceholder"
     span.textContent = "…"
-    span.title = "Развернуть раздел"
+    span.title = t("Развернуть раздел")
     span.onclick = onclick
     return span
   },

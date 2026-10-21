@@ -68,7 +68,7 @@ final class NoteSession: EditorSource {
     var header: String? {
         if case .trash(let item) = kind {
             let days = item.daysLeft()
-            return "Недавно удалённая заметка. Её нельзя изменить, пока она здесь. Удалится через \(days) \(Plural.days(days))."
+            return String(localized: "Недавно удалённая заметка. Её нельзя изменить, пока она здесь. Удалится через \(days) \(Plural.days(days)).")
         }
         guard let record else { return nil }
         return Self.dateFormatter.string(from: record.modified)
@@ -76,7 +76,7 @@ final class NoteSession: EditorSource {
 
     static let dateFormatter: DateFormatter = {
         let f = DateFormatter()
-        f.locale = Locale(identifier: "ru_RU")
+        f.locale = UILanguage.locale
         f.dateStyle = .long
         f.timeStyle = .short
         return f
@@ -176,7 +176,7 @@ enum Plural {
         return many
     }
 
-    static func days(_ n: Int) -> String { form(n, "день", "дня", "дней") }
-    static func notes(_ n: Int) -> String { form(n, "заметка", "заметки", "заметок") }
-    static func notesGenitive(_ n: Int) -> String { form(n, "заметку", "заметки", "заметок") }
+    static func days(_ n: Int) -> String { UILanguage.isRussian ? form(n, "день", "дня", "дней") : n == 1 ? "day" : "days" }
+    static func notes(_ n: Int) -> String { UILanguage.isRussian ? form(n, "заметка", "заметки", "заметок") : n == 1 ? "note" : "notes" }
+    static func notesGenitive(_ n: Int) -> String { UILanguage.isRussian ? form(n, "заметку", "заметки", "заметок") : n == 1 ? "note" : "notes" }
 }

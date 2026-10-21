@@ -1,0 +1,7 @@
+/* English. Keys are the Russian source strings (with %@ / %lld for inserted values). */
+
+"В быструю заметку" = "Save as Quick Note";
+"Новая заметка в Заметках.md" = "New Note in Notes.md";
+"Отменить" = "Cancel";
+"Сохранить" = "Save";
+"Файлов: %lld" = "Files: %lld";

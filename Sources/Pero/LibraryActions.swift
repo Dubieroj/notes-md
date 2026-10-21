@@ -43,7 +43,7 @@ extension LibraryWindowController: NSServicesMenuRequestor {
 
     func createFolder(in parent: String, library other: Library? = nil) {
         if let other { switchLibrary(to: other) }
-        guard let path = try? library.createFolder(named: "Новая папка", in: parent) else { return NSSound.beep() }
+        guard let path = try? library.createFolder(named: String(localized: "Новая папка"), in: parent) else { return NSSound.beep() }
         showScope(.folder(path))
         DispatchQueue.main.async { self.sidebar.beginRename() }
     }
@@ -82,7 +82,7 @@ extension LibraryWindowController: NSServicesMenuRequestor {
                 _ = try? target.library.restore(ids)
                 target.reloadList(select: paths)
             }
-            window?.undoManager?.setActionName(paths.count == 1 ? "удаление заметки" : "удаление заметок")
+            window?.undoManager?.setActionName(paths.count == 1 ? String(localized: "удаление заметки") : String(localized: "удаление заметок"))
             if let next { list.select([next]) }
         } catch { showError(error) }
     }
@@ -98,10 +98,10 @@ extension LibraryWindowController: NSServicesMenuRequestor {
         let ids = paths.compactMap { p in library.trash.first { library.trashRecords[$0.id]?.path == p }?.id }
         guard !ids.isEmpty, let window else { return }
         let alert = NSAlert()
-        alert.messageText = ids.count == 1 ? "Удалить заметку навсегда?" : "Удалить \(ids.count) \(Plural.notesGenitive(ids.count)) навсегда?"
-        alert.informativeText = "Это действие нельзя отменить."
-        alert.addButton(withTitle: "Удалить")
-        alert.addButton(withTitle: "Отменить")
+        alert.messageText = ids.count == 1 ? String(localized: "Удалить заметку навсегда?") : String(localized: "Удалить \(ids.count) \(Plural.notesGenitive(ids.count)) навсегда?")
+        alert.informativeText = String(localized: "Это действие нельзя отменить.")
+        alert.addButton(withTitle: String(localized: "Удалить"))
+        alert.addButton(withTitle: String(localized: "Отменить"))
         alert.buttons[0].hasDestructiveAction = true
         alert.beginSheetModal(for: window) { response in
             guard response == .alertFirstButtonReturn else { return }
@@ -113,10 +113,10 @@ extension LibraryWindowController: NSServicesMenuRequestor {
         let library = other ?? self.library
         guard let window, !library.trash.isEmpty else { return }
         let alert = NSAlert()
-        alert.messageText = "Удалить все заметки из «Недавно удалённых» навсегда?"
-        alert.informativeText = "Это действие нельзя отменить."
-        alert.addButton(withTitle: "Удалить")
-        alert.addButton(withTitle: "Отменить")
+        alert.messageText = String(localized: "Удалить все заметки из «Недавно удалённых» навсегда?")
+        alert.informativeText = String(localized: "Это действие нельзя отменить.")
+        alert.addButton(withTitle: String(localized: "Удалить"))
+        alert.addButton(withTitle: String(localized: "Отменить"))
         alert.buttons[0].hasDestructiveAction = true
         alert.beginSheetModal(for: window) { response in
             guard response == .alertFirstButtonReturn else { return }
@@ -161,7 +161,7 @@ extension LibraryWindowController: NSServicesMenuRequestor {
             window?.undoManager?.registerUndo(withTarget: self) { target in
                 for (origin, pairs) in back { _ = try? target.library.move(pairs.map(\.value), to: origin) }
             }
-            window?.undoManager?.setActionName("перемещение")
+            window?.undoManager?.setActionName(String(localized: "перемещение"))
         } catch { showError(error) }
     }
 
@@ -178,10 +178,10 @@ extension LibraryWindowController: NSServicesMenuRequestor {
         guard let window else { return }
         let count = library.notes.values.filter { $0.folder == path || $0.folder.hasPrefix(path + "/") }.count
         let alert = NSAlert()
-        alert.messageText = "Удалить папку «\((path as NSString).lastPathComponent)»?"
-        alert.informativeText = count == 0 ? "Папка пуста." : "\(count) \(Plural.notes(count)) из неё и вложенных папок переместятся в «Недавно удалённые»."
-        alert.addButton(withTitle: "Удалить")
-        alert.addButton(withTitle: "Отменить")
+        alert.messageText = String(localized: "Удалить папку «\((path as NSString).lastPathComponent)»?")
+        alert.informativeText = count == 0 ? String(localized: "Папка пуста.") : String(localized: "\(count) \(Plural.notes(count)) из неё и вложенных папок переместятся в «Недавно удалённые».")
+        alert.addButton(withTitle: String(localized: "Удалить"))
+        alert.addButton(withTitle: String(localized: "Отменить"))
         alert.buttons[0].hasDestructiveAction = true
         alert.beginSheetModal(for: window) { response in
             guard response == .alertFirstButtonReturn else { return }
@@ -197,18 +197,18 @@ extension LibraryWindowController: NSServicesMenuRequestor {
         if let other { switchLibrary(to: other) }
         guard let window else { return }
         let alert = NSAlert()
-        alert.messageText = "Преобразовать «\((path as NSString).lastPathComponent)» в смарт-папку?"
-        alert.informativeText = "Заметки переместятся в папку «Заметки» и получат тег с названием этой папки. Это действие нельзя отменить."
-        alert.addButton(withTitle: "Преобразовать")
-        alert.addButton(withTitle: "Отменить")
+        alert.messageText = String(localized: "Преобразовать «\((path as NSString).lastPathComponent)» в смарт-папку?")
+        alert.informativeText = String(localized: "Заметки переместятся в папку «Заметки» и получат тег с названием этой папки. Это действие нельзя отменить.")
+        alert.addButton(withTitle: String(localized: "Преобразовать"))
+        alert.addButton(withTitle: String(localized: "Отменить"))
         alert.beginSheetModal(for: window) { response in
             guard response == .alertFirstButtonReturn else { return }
             do {
                 let smart = try self.library.convertToSmartFolder(path)
                 self.showScope(.smart(smart.id))
             } catch {
-                self.showMessage("Эту папку нельзя преобразовать",
-                                 "Нельзя преобразовать папку с вложенными папками или заблокированными заметками.")
+                self.showMessage(String(localized: "Эту папку нельзя преобразовать"),
+                                 String(localized: "Нельзя преобразовать папку с вложенными папками или заблокированными заметками."))
             }
         }
     }
@@ -231,8 +231,8 @@ extension LibraryWindowController: NSServicesMenuRequestor {
 
     func renameTag(_ tag: String) {
         guard let window else { return }
-        TextPrompt.ask(on: window, title: "Переименовать тег #\(tag)", message: "Тег изменится во всех заметках.",
-                       value: tag, confirm: "Переименовать") { [weak self] name in
+        TextPrompt.ask(on: window, title: String(localized: "Переименовать тег #\(tag)"), message: String(localized: "Тег изменится во всех заметках."),
+                       value: tag, confirm: String(localized: "Переименовать")) { [weak self] name in
             guard let self else { return }
             let clean = name.trimmingCharacters(in: CharacterSet(charactersIn: "# ")).replacingOccurrences(of: " ", with: "_")
             guard !clean.isEmpty, clean != tag else { return }
@@ -247,10 +247,10 @@ extension LibraryWindowController: NSServicesMenuRequestor {
     func deleteTag(_ tag: String) {
         guard let window else { return }
         let alert = NSAlert()
-        alert.messageText = "Удалить тег #\(tag)?"
-        alert.informativeText = "Тег уберётся из текста всех заметок. Сами заметки останутся."
-        alert.addButton(withTitle: "Удалить")
-        alert.addButton(withTitle: "Отменить")
+        alert.messageText = String(localized: "Удалить тег #\(tag)?")
+        alert.informativeText = String(localized: "Тег уберётся из текста всех заметок. Сами заметки останутся.")
+        alert.addButton(withTitle: String(localized: "Удалить"))
+        alert.addButton(withTitle: String(localized: "Отменить"))
         alert.beginSheetModal(for: window) { response in
             guard response == .alertFirstButtonReturn else { return }
             self.session?.saveNow()
@@ -266,17 +266,17 @@ extension LibraryWindowController: NSServicesMenuRequestor {
     @objc func lockNote(_ sender: Any?) {
         guard let path = list.selectedPaths.first, let record = library.record(path), let window else { return }
         if record.isLocked {
-            guard let master = lock.master else { return showMessage("Сначала откройте заметку", "Введите пароль для заметок, чтобы снять с неё защиту.") }
+            guard let master = lock.master else { return showMessage(String(localized: "Сначала откройте заметку"), String(localized: "Введите пароль для заметок, чтобы снять с неё защиту.")) }
             closeSession(for: path)
             do { reveal(try library.removeLock(path, master: master)) } catch { showError(error) }
             return
         }
         // The same limits as in Notes.
-        if record.isQuickNote { return showMessage("Быструю заметку нельзя заблокировать", "Переместите её в другую папку, а потом заблокируйте.") }
-        if !record.tags.isEmpty { return showMessage("Заметку с тегами нельзя заблокировать", "Уберите теги из заметки, а потом заблокируйте её.") }
+        if record.isQuickNote { return showMessage(String(localized: "Быструю заметку нельзя заблокировать"), String(localized: "Переместите её в другую папку, а потом заблокируйте.")) }
+        if !record.tags.isEmpty { return showMessage(String(localized: "Заметку с тегами нельзя заблокировать"), String(localized: "Уберите теги из заметки, а потом заблокируйте её.")) }
         if !record.flags.isDisjoint(with: [.pdfs, .documents, .audio, .scans, .images, .sketches]) {
-            return showMessage("Заметку с вложениями пока нельзя заблокировать",
-                               "Шифруется только текст заметки. Уберите из неё картинки и файлы, а потом заблокируйте.")
+            return showMessage(String(localized: "Заметку с вложениями пока нельзя заблокировать"),
+                               String(localized: "Шифруется только текст заметки. Уберите из неё картинки и файлы, а потом заблокируйте."))
         }
         let proceed = { [weak self] in
             guard let self, let master = self.lock.master else { return }
@@ -326,7 +326,7 @@ extension LibraryWindowController: NSServicesMenuRequestor {
         let panel = NSOpenPanel()
         panel.allowsMultipleSelection = true
         panel.canChooseDirectories = false
-        panel.prompt = "Прикрепить"
+        panel.prompt = String(localized: "Прикрепить")
         panel.beginSheetModal(for: window) { response in
             guard response == .OK else { return }
             let parts = panel.urls.compactMap { url in (try? Data(contentsOf: url)).flatMap { self.attach(data: $0, name: url.lastPathComponent) } }
@@ -349,18 +349,18 @@ extension LibraryWindowController: NSServicesMenuRequestor {
 
     func readSelection(from pasteboard: NSPasteboard) -> Bool {
         let stamp = Self.stampFormatter.string(from: Date())
-        if let pdf = pasteboard.data(forType: .pdf), let md = attach(data: pdf, name: "Скан \(stamp).pdf") {
+        if let pdf = pasteboard.data(forType: .pdf), let md = attach(data: pdf, name: String(localized: "Скан \(stamp)") + ".pdf") {
             editor.insert(md + "\n")
             return true
         }
         for (type, ext) in [(NSPasteboard.PasteboardType("public.jpeg"), "jpg"), (.png, "png"), (NSPasteboard.PasteboardType("public.heic"), "heic")] {
-            if let data = pasteboard.data(forType: type), let md = attach(data: data, name: "Фото \(stamp).\(ext)") {
+            if let data = pasteboard.data(forType: type), let md = attach(data: data, name: String(localized: "Фото \(stamp)") + ".\(ext)") {
                 editor.insert(md + "\n")
                 return true
             }
         }
         if let tiff = pasteboard.data(forType: .tiff), let rep = NSBitmapImageRep(data: tiff),
-           let png = rep.representation(using: .png, properties: [:]), let md = attach(data: png, name: "Рисунок \(stamp).png") {
+           let png = rep.representation(using: .png, properties: [:]), let md = attach(data: png, name: String(localized: "Рисунок \(stamp)") + ".png") {
             editor.insert(md + "\n")
             return true
         }
@@ -371,7 +371,7 @@ extension LibraryWindowController: NSServicesMenuRequestor {
 
     static let stampFormatter: DateFormatter = {
         let f = DateFormatter()
-        f.locale = Locale(identifier: "ru_RU")
+        f.locale = Locale(identifier: Bundle.main.preferredLocalizations.first ?? "en")
         f.dateFormat = "dd.MM.yyyy HH-mm-ss"
         return f
     }()
@@ -437,7 +437,7 @@ extension LibraryWindowController: NSServicesMenuRequestor {
         guard let format = (sender.representedObject as? String).flatMap(ExportFormat.init(rawValue:)), let window else { return }
         session?.saveNow()
         let records = list.selectedPaths.compactMap { library.record($0) }.filter { !$0.isLocked }
-        guard !records.isEmpty else { return showMessage("Нечего экспортировать", "Заблокированные заметки не экспортируются.") }
+        guard !records.isEmpty else { return showMessage(String(localized: "Нечего экспортировать"), String(localized: "Заблокированные заметки не экспортируются.")) }
         if records.count == 1 {
             let r = records[0]
             Exporter.ask(for: format.type, base: FileNames.baseName(forTitle: r.displayTitle), directory: nil, window: window) { url in
@@ -446,7 +446,7 @@ extension LibraryWindowController: NSServicesMenuRequestor {
                 }
             }
         } else {
-            chooseFolder(prompt: "Экспортировать") { dir in
+            chooseFolder(prompt: String(localized: "Экспортировать")) { dir in
                 LibraryExport(library: self.library, editor: self.editor).exportMany(records, as: format, into: dir) { error in
                     if let error { self.showError(error) } else { NSWorkspace.shared.activateFileViewerSelecting([dir]) }
                 }
@@ -458,8 +458,8 @@ extension LibraryWindowController: NSServicesMenuRequestor {
         if let other { switchLibrary(to: other) }
         session?.saveNow()
         let records = library.notes.values.filter { !$0.isLocked && ($0.folder == path || path.isEmpty || $0.folder.hasPrefix(path + "/")) }
-        chooseFolder(prompt: "Экспортировать") { dir in
-            let name = path.isEmpty ? "Заметки" : (path as NSString).lastPathComponent
+        chooseFolder(prompt: String(localized: "Экспортировать")) { dir in
+            let name = path.isEmpty ? String(localized: "Заметки") : (path as NSString).lastPathComponent
             let target = FileNames.unique(name, ext: "", in: dir)
             LibraryExport(library: self.library, editor: self.editor)
                 .exportTree(Array(records), base: path, into: target) { error in
@@ -502,15 +502,15 @@ extension LibraryWindowController: NSServicesMenuRequestor {
             }
         }
         let isMain = library === libraries.main
-        add(isMain ? "Заметки" : library.root.lastPathComponent, "", symbol: isMain ? "folder" : "folder.fill")
-        if isMain { add("Быстрые заметки", Library.quickFolder, symbol: "note.text") }
+        add(isMain ? String(localized: "Заметки") : library.root.lastPathComponent, "", symbol: isMain ? "folder" : "folder.fill")
+        if isMain { add(String(localized: "Быстрые заметки"), Library.quickFolder, symbol: "note.text") }
         folders(of: library, represent: { $0 }, depthOffset: 0)
         guard otherLibraries else { return menu }
         for other in libraries.all where other !== library {
             menu.addItem(.separator())
             let root = other.root.path
             let otherIsMain = other === libraries.main
-            add(otherIsMain ? "Заметки (На Mac)" : other.root.lastPathComponent, ["root": root, "folder": ""],
+            add(otherIsMain ? String(localized: "Заметки (На Mac)") : other.root.lastPathComponent, ["root": root, "folder": ""],
                 symbol: otherIsMain ? "folder" : "folder.fill")
             folders(of: other, represent: { ["root": root, "folder": $0] }, depthOffset: 1)
         }
@@ -525,43 +525,43 @@ extension LibraryWindowController: NSServicesMenuRequestor {
             return i
         }
         if scope == .trash {
-            let restore = NSMenuItem(title: "Восстановить", action: #selector(restoreNote(_:)), keyEquivalent: "")
+            let restore = NSMenuItem(title: String(localized: "Восстановить"), action: #selector(restoreNote(_:)), keyEquivalent: "")
             restore.target = self
             menu.addItem(restore)
-            let move = NSMenuItem(title: "Переместить в", action: nil, keyEquivalent: "")
+            let move = NSMenuItem(title: String(localized: "Переместить в"), action: nil, keyEquivalent: "")
             move.submenu = folderMenu(action: #selector(moveToFolder(_:)), otherLibraries: false)
             move.submenu?.items.forEach { $0.target = self }
             menu.addItem(move)
             menu.addItem(.separator())
-            menu.addItem(item("Удалить навсегда…", #selector(deleteNote(_:))))
+            menu.addItem(item(String(localized: "Удалить навсегда…"), #selector(deleteNote(_:))))
             return
         }
         let pinned = paths.allSatisfy { library.isPinned($0) }
-        menu.addItem(item(pinned ? "Открепить заметку" : "Закрепить заметку", #selector(pinNote(_:))))
+        menu.addItem(item(pinned ? String(localized: "Открепить заметку") : String(localized: "Закрепить заметку"), #selector(pinNote(_:))))
         if paths.count == 1 {
-            menu.addItem(item(clicked.isLocked ? "Снять защиту" : "Заблокировать заметку", #selector(lockNote(_:))))
+            menu.addItem(item(clicked.isLocked ? String(localized: "Снять защиту") : String(localized: "Заблокировать заметку"), #selector(lockNote(_:))))
         }
-        let move = NSMenuItem(title: "Переместить в", action: nil, keyEquivalent: "")
+        let move = NSMenuItem(title: String(localized: "Переместить в"), action: nil, keyEquivalent: "")
         move.submenu = folderMenu(action: #selector(moveToFolder(_:)))
         move.submenu?.items.forEach { $0.target = self }
         menu.addItem(move)
         menu.addItem(.separator())
         if paths.count == 1 {
-            menu.addItem(item("Дублировать", #selector(duplicateNote(_:))))
-            menu.addItem(item("Открыть в новом окне", #selector(openNoteInNewWindow(_:))))
+            menu.addItem(item(String(localized: "Дублировать"), #selector(duplicateNote(_:))))
+            menu.addItem(item(String(localized: "Открыть в новом окне"), #selector(openNoteInNewWindow(_:))))
         }
-        let shareItem = ClosureMenuItem(title: "Поделиться…") { [weak self] in
+        let shareItem = ClosureMenuItem(title: String(localized: "Поделиться…")) { [weak self] in
             guard let self, let view = view ?? self.window?.contentView else { return }
             self.share(paths, from: view)
         }
         menu.addItem(shareItem)
-        let export = NSMenuItem(title: "Экспортировать как", action: nil, keyEquivalent: "")
+        let export = NSMenuItem(title: String(localized: "Экспортировать как"), action: nil, keyEquivalent: "")
         export.submenu = MainMenu.exportMenu()
         export.submenu?.items.forEach { $0.target = self }
         menu.addItem(export)
-        menu.addItem(item("Показать в Finder", #selector(revealInFinder(_:))))
+        menu.addItem(item(String(localized: "Показать в Finder"), #selector(revealInFinder(_:))))
         menu.addItem(.separator())
-        menu.addItem(item(paths.count == 1 ? "Удалить заметку" : "Удалить заметки", #selector(deleteNote(_:))))
+        menu.addItem(item(paths.count == 1 ? String(localized: "Удалить заметку") : String(localized: "Удалить заметки"), #selector(deleteNote(_:))))
     }
 
     @objc func revealInFinder(_ sender: Any?) {
@@ -616,8 +616,8 @@ extension LibraryWindowController {
         panel.canChooseFiles = false
         panel.canChooseDirectories = true
         panel.canCreateDirectories = true
-        panel.prompt = "Подключить"
-        panel.message = "Папка с Markdown-файлами. Они появятся как заметки и будут правиться на месте; служебные файлы в неё не попадут."
+        panel.prompt = String(localized: "Подключить")
+        panel.message = String(localized: "Папка с Markdown-файлами. Они появятся как заметки и будут правиться на месте; служебные файлы в неё не попадут.")
         panel.beginSheetModal(for: window) { response in
             guard response == .OK, let url = panel.url else { return }
             self.link(url)
@@ -634,10 +634,10 @@ extension LibraryWindowController {
     func unlinkFolder(_ library: Library) {
         guard let window else { return }
         let alert = NSAlert()
-        alert.messageText = "Отключить папку «\(library.root.lastPathComponent)»?"
-        alert.informativeText = "Файлы в ней останутся на месте, папка просто пропадёт из боковой панели. Подключить её снова можно в любой момент."
-        alert.addButton(withTitle: "Отключить")
-        alert.addButton(withTitle: "Отменить")
+        alert.messageText = String(localized: "Отключить папку «\(library.root.lastPathComponent)»?")
+        alert.informativeText = String(localized: "Файлы в ней останутся на месте, папка просто пропадёт из боковой панели. Подключить её снова можно в любой момент.")
+        alert.addButton(withTitle: String(localized: "Отключить"))
+        alert.addButton(withTitle: String(localized: "Отменить"))
         alert.beginSheetModal(for: window) { response in
             guard response == .alertFirstButtonReturn else { return }
             self.unlink(library)

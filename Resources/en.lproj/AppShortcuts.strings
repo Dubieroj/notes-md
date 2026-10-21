@@ -1,0 +1,5 @@
+/* English. Keys are the Russian source strings (with %@ / %lld for inserted values). */
+
+"Найди заметки в ${applicationName}" = "Find notes in ${applicationName}";
+"Новая заметка в ${applicationName}" = "New note in ${applicationName}";
+"Создай заметку в ${applicationName}" = "Create a note in ${applicationName}";

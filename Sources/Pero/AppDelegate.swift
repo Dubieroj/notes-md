@@ -27,6 +27,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let url = Settings.libraryURL
         do {
             try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
+            UILanguage.setUp(libraryRoot: url)
             let library = try Library(root: url)
             libraries = Libraries(main: library)
             let lock = LockManager(library: library)
@@ -34,7 +35,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             main = LibraryWindowController(libraries: libraries!, lock: lock)
         } catch {
             let alert = NSAlert(error: error)
-            alert.messageText = "Не удалось открыть библиотеку заметок в \(url.path)"
+            alert.messageText = String(localized: "Не удалось открыть библиотеку заметок в \(url.path)")
             alert.runModal()
         }
     }
@@ -130,15 +131,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         panel.canChooseFiles = false
         panel.canChooseDirectories = true
         panel.canCreateDirectories = true
-        panel.prompt = "Выбрать"
-        panel.message = "Папка, где будут храниться заметки. Можно перенести туда нынешние или открыть папку, где Markdown-файлы уже есть."
+        panel.prompt = String(localized: "Выбрать")
+        panel.message = String(localized: "Папка, где будут храниться заметки. Можно перенести туда нынешние или открыть папку, где Markdown-файлы уже есть.")
         guard panel.runModal() == .OK, let url = panel.url else { return }
         let picked = url.resolvingSymlinksInPath().path, root = current.root.resolvingSymlinksInPath().path
         if picked == root { return }
         if picked.hasPrefix(root + "/") || root.hasPrefix(picked + "/") {
             let alert = NSAlert()
-            alert.messageText = "Эта папка пересекается с библиотекой"
-            alert.informativeText = "Выберите папку вне нынешней библиотеки и не ту, в которой она лежит."
+            alert.messageText = String(localized: "Эта папка пересекается с библиотекой")
+            alert.informativeText = String(localized: "Выберите папку вне нынешней библиотеки и не ту, в которой она лежит.")
             alert.runModal()
             return
         }
@@ -146,21 +147,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let contents = ((try? fm.contentsOfDirectory(atPath: url.path)) ?? []).filter { $0 != ".DS_Store" }
         let alert = NSAlert()
         if contents.isEmpty {
-            alert.messageText = "Перенести заметки в «\(url.lastPathComponent)»?"
-            alert.informativeText = "Заметки, вложения и настройки библиотеки скопируются в новую папку. Прежняя папка останется на месте как есть."
-            alert.addButton(withTitle: "Перенести заметки")
-            alert.addButton(withTitle: "Начать с пустой")
-            alert.addButton(withTitle: "Отменить")
+            alert.messageText = String(localized: "Перенести заметки в «\(url.lastPathComponent)»?")
+            alert.informativeText = String(localized: "Заметки, вложения и настройки библиотеки скопируются в новую папку. Прежняя папка останется на месте как есть.")
+            alert.addButton(withTitle: String(localized: "Перенести заметки"))
+            alert.addButton(withTitle: String(localized: "Начать с пустой"))
+            alert.addButton(withTitle: String(localized: "Отменить"))
             switch alert.runModal() {
             case .alertFirstButtonReturn: switchLibrary(to: url, copyNotes: true)
             case .alertSecondButtonReturn: switchLibrary(to: url, copyNotes: false)
             default: return
             }
         } else {
-            alert.messageText = "Открыть «\(url.lastPathComponent)» как библиотеку?"
-            alert.informativeText = "В папке уже есть файлы: Markdown-файлы из неё станут заметками, а подпапки — папками. Нынешние заметки останутся в прежней папке."
-            alert.addButton(withTitle: "Открыть как библиотеку")
-            alert.addButton(withTitle: "Отменить")
+            alert.messageText = String(localized: "Открыть «\(url.lastPathComponent)» как библиотеку?")
+            alert.informativeText = String(localized: "В папке уже есть файлы: Markdown-файлы из неё станут заметками, а подпапки — папками. Нынешние заметки останутся в прежней папке.")
+            alert.addButton(withTitle: String(localized: "Открыть как библиотеку"))
+            alert.addButton(withTitle: String(localized: "Отменить"))
             guard alert.runModal() == .alertFirstButtonReturn else { return }
             switchLibrary(to: url, copyNotes: false)
         }
@@ -179,6 +180,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     try fm.copyItem(at: old.root.appendingPathComponent(name), to: url.appendingPathComponent(name))
                 }
             }
+            UILanguage.setUp(libraryRoot: url)
             let new = try Library(root: url)
             main?.window?.close()
             SettingsWindowController.reset()
@@ -320,21 +322,21 @@ enum MainMenu {
         return item
     }
 
-    private static func item(_ title: String, _ action: Selector?, _ key: String = "",
+    private static func item(_ title: String.LocalizationValue, _ action: Selector?, _ key: String = "",
                              _ modifiers: NSEvent.ModifierFlags = .command, command: String? = nil) -> NSMenuItem {
-        let item = NSMenuItem(title: title, action: action, keyEquivalent: key)
+        let item = NSMenuItem(title: String(localized: title), action: action, keyEquivalent: key)
         item.keyEquivalentModifierMask = modifiers
         item.representedObject = command
         return item
     }
 
     private static func appMenu() -> NSMenu {
-        let menu = NSMenu(title: "Заметки.md")
+        let menu = NSMenu(title: String(localized: "Заметки.md"))
         menu.addItem(item("О программе «Заметки.md»", #selector(NSApplication.orderFrontStandardAboutPanel(_:))))
         menu.addItem(.separator())
         menu.addItem(item("Настройки…", #selector(AppDelegate.showSettings(_:)), ","))
         menu.addItem(.separator())
-        let services = NSMenu(title: "Службы")
+        let services = NSMenu(title: String(localized: "Службы"))
         menu.addItem(submenu(services))
         NSApp.servicesMenu = services
         menu.addItem(.separator())
@@ -347,7 +349,7 @@ enum MainMenu {
     }
 
     private static func fileMenu() -> NSMenu {
-        let menu = NSMenu(title: "Файл")
+        let menu = NSMenu(title: String(localized: "Файл"))
         menu.addItem(item("Новая заметка", #selector(AppDelegate.newNote(_:)), "n"))
         menu.addItem(item("Новая папка", #selector(LibraryWindowController.newFolder(_:)), "n", [.command, .shift]))
         menu.addItem(item("Новая смарт-папка…", #selector(LibraryWindowController.newSmartFolder(_:))))
@@ -355,7 +357,7 @@ enum MainMenu {
         menu.addItem(item("Подключить папку с диска…", #selector(AppDelegate.linkFolder(_:))))
         menu.addItem(.separator())
         menu.addItem(item("Открыть файл Markdown…", #selector(NSDocumentController.openDocument(_:)), "o"))
-        let recent = NSMenu(title: "Открыть недавние")
+        let recent = NSMenu(title: String(localized: "Открыть недавние"))
         recent.addItem(item("Очистить меню", #selector(NSDocumentController.clearRecentDocuments(_:))))
         menu.addItem(submenu(recent))
         menu.addItem(item("Открыть папку…", #selector(EditorWindowController.openFolder(_:)), "o", [.command, .shift]))
@@ -366,7 +368,7 @@ enum MainMenu {
         menu.addItem(.separator())
         menu.addItem(item("Импортировать в Заметки.md…", #selector(LibraryWindowController.importDialog(_:))))
         menu.addItem(item("Импорт из «Заметок» Apple…", #selector(LibraryWindowController.importAppleNotes(_:))))
-        let export = NSMenuItem(title: "Экспортировать как", action: nil, keyEquivalent: "")
+        let export = NSMenuItem(title: String(localized: "Экспортировать как"), action: nil, keyEquivalent: "")
         export.submenu = exportMenu()
         menu.addItem(export)
         menu.addItem(item("Экспортировать всю библиотеку…", #selector(LibraryWindowController.exportLibrary(_:))))
@@ -379,7 +381,7 @@ enum MainMenu {
         menu.addItem(.separator())
         menu.addItem(item("Прикрепить файл…", #selector(LibraryWindowController.attachFile(_:)), "a", [.command, .shift]))
         // AppKit fills this with Take Photo / Scan Documents / Add Sketch for a nearby iPhone or iPad.
-        let device = NSMenuItem(title: "Вставить с iPhone или iPad", action: nil, keyEquivalent: "")
+        let device = NSMenuItem(title: String(localized: "Вставить с iPhone или iPad"), action: nil, keyEquivalent: "")
         device.identifier = NSMenuItem.importFromDeviceIdentifier
         menu.addItem(device)
         menu.addItem(.separator())
@@ -388,17 +390,22 @@ enum MainMenu {
     }
 
     static func exportMenu() -> NSMenu {
-        let menu = NSMenu(title: "Экспортировать как")
-        for (title, format) in [("PDF…", "pdf"), ("Markdown…", "markdown"), ("HTML…", "html"), ("Текст…", "text")] {
+        let menu = NSMenu(title: String(localized: "Экспортировать как"))
+        for (title, format): (String.LocalizationValue, String) in [("PDF…", "pdf"), ("Markdown…", "markdown"), ("HTML…", "html"), ("Текст…", "text")] {
             menu.addItem(item(title, #selector(LibraryWindowController.exportNotes(_:)), command: format))
         }
         return menu
     }
 
     private static func editMenu() -> NSMenu {
-        let menu = NSMenu(title: "Правка")
-        menu.addItem(item("Отменить", #selector(LibraryWindowController.peroUndo(_:)), "z"))
-        menu.addItem(item("Повторить", #selector(LibraryWindowController.peroRedo(_:)), "z", [.command, .shift]))
+        let menu = NSMenu(title: String(localized: "Правка"))
+        // «Отменить» is also Cancel on dialog buttons (and «Повторить» could be Retry): Undo and Redo have keys of their own.
+        menu.addItem(NSMenuItem(title: String(localized: "menu.undo", defaultValue: "Отменить"),
+                                action: #selector(LibraryWindowController.peroUndo(_:)), keyEquivalent: "z"))
+        let redo = NSMenuItem(title: String(localized: "menu.redo", defaultValue: "Повторить"),
+                              action: #selector(LibraryWindowController.peroRedo(_:)), keyEquivalent: "z")
+        redo.keyEquivalentModifierMask = [.command, .shift]
+        menu.addItem(redo)
         menu.addItem(.separator())
         menu.addItem(item("Вырезать", #selector(NSText.cut(_:)), "x"))
         menu.addItem(item("Скопировать", #selector(NSText.copy(_:)), "c"))
@@ -417,13 +424,13 @@ enum MainMenu {
     }
 
     private static func formatMenu() -> NSMenu {
-        let menu = NSMenu(title: "Формат")
+        let menu = NSMenu(title: String(localized: "Формат"))
         for i in paragraphStyles() { menu.addItem(i) }
         menu.addItem(.separator())
         let action = #selector(LibraryWindowController.format(_:))
         menu.addItem(item("Чек-лист", action, "l", [.command, .shift], command: "checklist"))
         menu.addItem(item("Отметить пункт", action, "u", [.command, .shift], command: "toggleCheck"))
-        let more = NSMenu(title: "Ещё о чек-листах")
+        let more = NSMenu(title: String(localized: "Ещё о чек-листах"))
         more.addItem(item("Отметить все", action, command: "checkAll"))
         more.addItem(item("Снять все отметки", action, command: "uncheckAll"))
         more.addItem(item("Переместить отмеченные вниз", action, command: "moveCheckedDown"))
@@ -433,7 +440,7 @@ enum MainMenu {
         menu.addItem(item("Таблица", action, "t", [.command, .option], command: "table"))
         menu.addItem(item("Разделитель", action, "l", command: "divider"))
         menu.addItem(.separator())
-        let font = NSMenu(title: "Шрифт")
+        let font = NSMenu(title: String(localized: "Шрифт"))
         font.addItem(item("Жирный", action, "b", command: "bold"))
         font.addItem(item("Курсив", action, "i", command: "italic"))
         font.addItem(item("Подчёркнутый", action, "u", command: "underline"))
@@ -441,12 +448,12 @@ enum MainMenu {
         font.addItem(item("Выделение", action, "e", [.command, .shift], command: "highlight"))
         font.addItem(item("Код в строке", action, command: "code"))
         menu.addItem(submenu(font))
-        let headings = NSMenu(title: "Заголовки Markdown")
+        let headings = NSMenu(title: String(localized: "Заголовки Markdown"))
         for level in 1...6 {
             headings.addItem(item("Заголовок \(level)", action, "\(level)", [.command, .control], command: "heading\(level)"))
         }
         menu.addItem(submenu(headings))
-        let indent = NSMenu(title: "Отступы")
+        let indent = NSMenu(title: String(localized: "Отступы"))
         indent.addItem(item("Увеличить уровень", action, "]", command: "indent"))
         indent.addItem(item("Уменьшить уровень", action, "[", command: "outdent"))
         menu.addItem(submenu(indent))
@@ -474,14 +481,14 @@ enum MainMenu {
 
     /// The «Aa» toolbar menu.
     static func paragraphStylesMenu() -> NSMenu {
-        let menu = NSMenu(title: "Формат")
+        let menu = NSMenu(title: String(localized: "Формат"))
         for i in paragraphStyles() {
             i.keyEquivalent = ""
             menu.addItem(i)
         }
         menu.addItem(.separator())
         let action = #selector(LibraryWindowController.format(_:))
-        for (title, command) in [("Жирный", "bold"), ("Курсив", "italic"), ("Подчёркнутый", "underline"),
+        for (title, command): (String.LocalizationValue, String) in [("Жирный", "bold"), ("Курсив", "italic"), ("Подчёркнутый", "underline"),
                                  ("Зачёркнутый", "strike"), ("Выделение", "highlight")] {
             menu.addItem(item(title, action, command: command))
         }
@@ -489,9 +496,9 @@ enum MainMenu {
     }
 
     static func attachMenu() -> NSMenu {
-        let menu = NSMenu(title: "Вложения")
+        let menu = NSMenu(title: String(localized: "Вложения"))
         menu.addItem(item("Прикрепить файл…", #selector(LibraryWindowController.attachFile(_:))))
-        let device = NSMenuItem(title: "Вставить с iPhone или iPad", action: nil, keyEquivalent: "")
+        let device = NSMenuItem(title: String(localized: "Вставить с iPhone или iPad"), action: nil, keyEquivalent: "")
         device.identifier = NSMenuItem.importFromDeviceIdentifier
         menu.addItem(device)
         menu.addItem(item("Добавить ссылку…", #selector(LibraryWindowController.insertLink(_:))))
@@ -499,20 +506,22 @@ enum MainMenu {
     }
 
     static func lockMenu() -> NSMenu {
-        let menu = NSMenu(title: "Блокировка")
+        let menu = NSMenu(title: String(localized: "Блокировка"))
         menu.addItem(item("Заблокировать заметку", #selector(LibraryWindowController.lockNote(_:))))
         menu.addItem(item("Закрыть заблокированные заметки", #selector(LibraryWindowController.closeLockedNotes(_:))))
         return menu
     }
 
     private static func viewMenu() -> NSMenu {
-        let menu = NSMenu(title: "Вид")
+        let menu = NSMenu(title: String(localized: "Вид"))
         menu.addItem(item("Списком", #selector(LibraryWindowController.showList(_:)), "1"))
         menu.addItem(item("Галереей", #selector(LibraryWindowController.showGallery(_:)), "2"))
-        menu.addItem(item("Вложения", #selector(LibraryWindowController.showAttachments(_:)), "3"))
+        // «Вложения» is also the window and toolbar title (Attachments); here it is Show Attachments.
+        menu.addItem(NSMenuItem(title: String(localized: "menu.showAttachments", defaultValue: "Вложения"),
+                                action: #selector(LibraryWindowController.showAttachments(_:)), keyEquivalent: "3"))
         menu.addItem(.separator())
-        let sort = NSMenu(title: "Сортировать по")
-        for (title, key) in [("Дате изменения", "modified"), ("Дате создания", "created"), ("Названию", "title")] {
+        let sort = NSMenu(title: String(localized: "Сортировать по"))
+        for (title, key): (String.LocalizationValue, String) in [("Дате изменения", "modified"), ("Дате создания", "created"), ("Названию", "title")] {
             sort.addItem(item(title, #selector(LibraryWindowController.sortBy(_:)), command: key))
         }
         menu.addItem(submenu(sort))
@@ -535,7 +544,7 @@ enum MainMenu {
     }
 
     private static func windowMenu() -> NSMenu {
-        let menu = NSMenu(title: "Окно")
+        let menu = NSMenu(title: String(localized: "Окно"))
         menu.addItem(item("Свернуть", #selector(NSWindow.performMiniaturize(_:)), "m"))
         menu.addItem(item("Изменить масштаб", #selector(NSWindow.performZoom(_:))))
         menu.addItem(.separator())
@@ -546,7 +555,7 @@ enum MainMenu {
     }
 
     private static func helpMenu() -> NSMenu {
-        let menu = NSMenu(title: "Справка")
+        let menu = NSMenu(title: String(localized: "Справка"))
         menu.addItem(item("Перестроить индекс поиска", #selector(AppDelegate.rebuildIndex(_:))))
         return menu
     }

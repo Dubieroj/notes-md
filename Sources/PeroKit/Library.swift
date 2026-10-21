@@ -5,8 +5,9 @@ import Foundation
 /// `.md` files, everything else Перо needs lives in `.pero/`. Use from the main thread.
 public final class Library {
     public static let didChange = Notification.Name("PeroLibraryDidChange")
-    public static let quickFolder = "Быстрые заметки"
-    public static let importedFolder = "Импортированные заметки"
+    /// Folder names in the interface language, set by the app before a library opens.
+    public static var quickFolder = "Быстрые заметки"
+    public static var importedFolder = "Импортированные заметки"
     public static let attachmentsFolder = "Attachments"
     public static let metaFolder = ".pero"
     public static let noteExtension = "md"

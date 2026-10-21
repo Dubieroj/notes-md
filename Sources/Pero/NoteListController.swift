@@ -19,7 +19,7 @@ final class NoteListController: NSViewController, NSTableViewDataSource, NSTable
     private let galleryScroll = NSScrollView()
     private var groups: [NoteGroup] = []
     private(set) var isGallery = false
-    private let emptyLabel = NSTextField(labelWithString: "Нет заметок")
+    private let emptyLabel = NSTextField(labelWithString: String(localized: "Нет заметок"))
     private(set) var rows: [ListRow] = []
     private var suppressSelection = false
     /// Shows the folder of each note (All Notes, smart folders, tags, search).
@@ -56,7 +56,7 @@ final class NoteListController: NSViewController, NSTableViewDataSource, NSTable
         table.registerForDraggedTypes([.fileURL])
         table.setDraggingSourceOperationMask([.move, .copy], forLocal: false)
         table.setDraggingSourceOperationMask(.move, forLocal: true)
-        table.setAccessibilityLabel("Заметки")
+        table.setAccessibilityLabel(String(localized: "Заметки"))
         let menu = NSMenu()
         menu.delegate = self
         table.menu = menu
@@ -96,7 +96,7 @@ final class NoteListController: NSViewController, NSTableViewDataSource, NSTable
         }
         gallery.onDelete = { [weak self] in self?.actions?.deleteNote(nil) }
         gallery.menu = table.menu
-        gallery.setAccessibilityLabel("Галерея заметок")
+        gallery.setAccessibilityLabel(String(localized: "Галерея заметок"))
         galleryScroll.documentView = gallery
         galleryScroll.hasVerticalScroller = true
         galleryScroll.autohidesScrollers = true
@@ -123,7 +123,7 @@ final class NoteListController: NSViewController, NSTableViewDataSource, NSTable
     // MARK: Content
 
     /// Replaces the rows, keeping the selection on the same notes where possible.
-    func setGroups(_ groups: [NoteGroup], select paths: [String]? = nil, empty: String = "Нет заметок") {
+    func setGroups(_ groups: [NoteGroup], select paths: [String]? = nil, empty: String = String(localized: "Нет заметок")) {
         let keep = paths ?? selectedPaths
         self.groups = groups
         rows = groups.flatMap { g -> [ListRow] in (g.title.isEmpty ? [] : [.header(g.title)]) + g.notes.map { .note($0) } }
@@ -300,7 +300,7 @@ final class NoteListController: NSViewController, NSTableViewDataSource, NSTable
         guard let record = rows[row].record, scope != .trash else { return [] }
         if edge == .leading {
             let pinned = library.isPinned(record.path)
-            let pin = NSTableViewRowAction(style: .regular, title: pinned ? "Открепить" : "Закрепить") { [weak self] _, _ in
+            let pin = NSTableViewRowAction(style: .regular, title: pinned ? String(localized: "Открепить") : String(localized: "Закрепить")) { [weak self] _, _ in
                 self?.library.setPinned([record.path], !pinned)
                 tableView.rowActionsVisible = false
             }
@@ -308,11 +308,11 @@ final class NoteListController: NSViewController, NSTableViewDataSource, NSTable
             pin.image = NSImage(systemSymbolName: pinned ? "pin.slash.fill" : "pin.fill", accessibilityDescription: nil)
             return [pin]
         }
-        let delete = NSTableViewRowAction(style: .destructive, title: "Удалить") { [weak self] _, _ in
+        let delete = NSTableViewRowAction(style: .destructive, title: String(localized: "Удалить")) { [weak self] _, _ in
             self?.actions?.deleteNotes([record.path])
         }
         delete.image = NSImage(systemSymbolName: "trash.fill", accessibilityDescription: nil)
-        let share = NSTableViewRowAction(style: .regular, title: "Поделиться") { [weak self] _, row in
+        let share = NSTableViewRowAction(style: .regular, title: String(localized: "Поделиться")) { [weak self] _, row in
             guard let self, let view = tableView.rowView(atRow: row, makeIfNecessary: false) else { return }
             self.actions?.share([record.path], from: view)
         }
@@ -411,7 +411,7 @@ final class NoteCell: NSTableCellView {
         folder.font = .systemFont(ofSize: 11)
         folder.textColor = .tertiaryLabelColor
         folder.lineBreakMode = .byTruncatingTail
-        lock.image = NSImage(systemSymbolName: "lock.fill", accessibilityDescription: "Заблокирована")
+        lock.image = NSImage(systemSymbolName: "lock.fill", accessibilityDescription: String(localized: "Заблокирована"))
         lock.contentTintColor = .secondaryLabelColor
         thumb.imageScaling = .scaleProportionallyUpOrDown
         thumb.wantsLayer = true
@@ -449,7 +449,7 @@ final class NoteCell: NSTableCellView {
         lock.isHidden = !r.isLocked
         titleAtEdge.isActive = !r.isLocked
         titleAfterLock.isActive = r.isLocked
-        let preview = r.isLocked ? "Заблокировано" : (r.preview.isEmpty ? "Нет дополнительного текста" : r.preview)
+        let preview = r.isLocked ? String(localized: "Заблокировано") : (r.preview.isEmpty ? String(localized: "Нет дополнительного текста") : r.preview)
         let date = ListDates.string(r.modified)
         let truncate = NSMutableParagraphStyle()
         truncate.lineBreakMode = .byTruncatingTail
@@ -457,7 +457,7 @@ final class NoteCell: NSTableCellView {
         text.append(NSAttributedString(string: preview, attributes: [.font: NSFont.systemFont(ofSize: 12), .foregroundColor: NSColor.tertiaryLabelColor, .paragraphStyle: truncate]))
         detail.attributedStringValue = text
         folder.isHidden = !showFolder
-        let folderName = r.folder.isEmpty ? "Заметки" : (r.folder as NSString).lastPathComponent
+        let folderName = r.folder.isEmpty ? String(localized: "Заметки") : (r.folder as NSString).lastPathComponent
         folder.stringValue = "📁 " + folderName
         thumb.image = nil
         thumb.isHidden = r.firstImage == nil || r.isLocked
@@ -482,15 +482,22 @@ final class NoteCell: NSTableCellView {
 }
 
 enum ListDates {
-    private static let time: DateFormatter = { let f = DateFormatter(); f.locale = Locale(identifier: "ru_RU"); f.dateFormat = "H:mm"; return f }()
-    private static let weekday: DateFormatter = { let f = DateFormatter(); f.locale = Locale(identifier: "ru_RU"); f.dateFormat = "EEEE"; return f }()
-    private static let date: DateFormatter = { let f = DateFormatter(); f.locale = Locale(identifier: "ru_RU"); f.dateFormat = "dd.MM.yyyy"; return f }()
+    // In the interface language's own style: «9:41» and «21.10.2026», "9:41 AM" and "10/21/26".
+    private static func formatter(_ setUp: (DateFormatter) -> Void) -> DateFormatter {
+        let f = DateFormatter()
+        f.locale = UILanguage.locale
+        setUp(f)
+        return f
+    }
+    private static let time = formatter { $0.timeStyle = .short }
+    private static let weekday = formatter { $0.dateFormat = "EEEE" }
+    private static let date = formatter { $0.dateStyle = .short }
 
     /// Notes's list dates: time today, «Вчера», the weekday this week, then the date.
     static func string(_ d: Date, now: Date = Date()) -> String {
         let cal = Calendar.current
         if cal.isDate(d, inSameDayAs: now) { return time.string(from: d) }
-        if let y = cal.date(byAdding: .day, value: -1, to: now), cal.isDate(d, inSameDayAs: y) { return "Вчера" }
+        if let y = cal.date(byAdding: .day, value: -1, to: now), cal.isDate(d, inSameDayAs: y) { return String(localized: "Вчера") }
         if let week = cal.date(byAdding: .day, value: -6, to: cal.startOfDay(for: now)), d >= week { return weekday.string(from: d) }
         return date.string(from: d)
     }
@@ -615,7 +622,7 @@ final class GalleryItem: NSCollectionViewItem {
         path = r.path
         nameLabel.stringValue = r.displayTitle
         date.stringValue = ListDates.string(r.modified)
-        snippet.stringValue = r.isLocked ? "🔒 Заблокировано" : r.title + "\n" + r.preview
+        snippet.stringValue = r.isLocked ? "🔒 " + String(localized: "Заблокировано") : r.title + "\n" + r.preview
         snippet.isHidden = false
         picture.image = nil
         picture.isHidden = true

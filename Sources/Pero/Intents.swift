@@ -14,7 +14,7 @@ struct PeroNoteEntity: AppEntity {
     var title: String
     var folder: String
     var displayRepresentation: DisplayRepresentation {
-        DisplayRepresentation(title: "\(title)", subtitle: "\(folder.isEmpty ? "Заметки" : folder)")
+        DisplayRepresentation(title: "\(title)", subtitle: folder.isEmpty ? "Заметки" : "\(folder)")
     }
 
     init(_ r: NoteRecord) {

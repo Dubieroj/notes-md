@@ -10,7 +10,7 @@ final class AttachmentsWindowController: NSWindowController {
         if shared == nil {
             let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 760, height: 560),
                                   styleMask: [.titled, .closable, .resizable, .miniaturizable], backing: .buffered, defer: false)
-            window.title = "Вложения"
+            window.title = String(localized: "Вложения")
             window.setFrameAutosaveName("PeroAttachments")
             shared = AttachmentsWindowController(window: window)
         }
@@ -79,7 +79,7 @@ final class AttachmentsModel: ObservableObject {
     static func kind(of path: String) -> AttachmentItem.Kind {
         let ext = (path as NSString).pathExtension.lowercased()
         let name = (path as NSString).lastPathComponent
-        if name.contains("Скан") { return .scans }
+        if name.contains("Скан") || name.contains("Scan") { return .scans }
         switch ext {
         case "png", "jpg", "jpeg", "gif", "heic", "heif", "webp", "tif", "tiff", "bmp", "mov", "mp4", "m4v": return .photos
         case "svg": return .sketches
@@ -96,7 +96,7 @@ private struct AttachmentsView: View {
     var body: some View {
         VStack(spacing: 0) {
             Picker("", selection: $model.kind) {
-                ForEach(AttachmentItem.Kind.allCases) { k in Text(k.rawValue).tag(k) }
+                ForEach(AttachmentItem.Kind.allCases) { k in Text(LocalizedStringKey(k.rawValue)).tag(k) }
             }
             .pickerStyle(.segmented)
             .labelsHidden()

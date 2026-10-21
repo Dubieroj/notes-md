@@ -1,0 +1,72 @@
+/* Palette shared by the editor and exported HTML/PDF. */
+:root {
+  color-scheme: light dark;
+  --bg: #fcfbf9;
+  --text: #26231f;
+  --heading: #1b1916;
+  --muted: #8b857c;
+  --faint: #cfc9bf;
+  --rule: #e6e1d9;
+  --accent: #2d6a8e;
+  --accent-soft: rgba(45, 106, 142, 0.14);
+  --markup: #b4582e;
+  --code-bg: #f3f0ea;
+  --code-text: #37322c;
+  --quote-bar: #d8d1c6;
+  --quote-text: #5e5850;
+  --selection: rgba(45, 106, 142, 0.2);
+  --task: #e6a817;
+  --tag: #b7790f;
+  --highlight: rgba(186, 120, 255, 0.28);
+
+  --tok-keyword: #8a3ea6;
+  --tok-string: #2c7a4b;
+  --tok-number: #b0570f;
+  --tok-comment: #8e897f;
+  --tok-function: #2d6a8e;
+  --tok-type: #a24a5a;
+  --tok-property: #3d5f9e;
+  --tok-meta: #7a6a3a;
+}
+
+@media screen and (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1b1c1e;
+    --text: #dcd8d1;
+    --heading: #f1ede6;
+    --muted: #8f8a82;
+    --faint: #57534d;
+    --rule: #323336;
+    --accent: #7fb6d8;
+    --accent-soft: rgba(127, 182, 216, 0.16);
+    --markup: #e38c62;
+    --code-bg: #25272a;
+    --code-text: #d6d2ca;
+    --quote-bar: #4a4b4f;
+    --quote-text: #a9a49b;
+    --selection: rgba(127, 182, 216, 0.25);
+    --task: #f2b928;
+    --tag: #f0b43c;
+    --highlight: rgba(186, 120, 255, 0.35);
+
+    --tok-keyword: #cf9ee6;
+    --tok-string: #8fcf9e;
+    --tok-number: #e8a86a;
+    --tok-comment: #7f7a72;
+    --tok-function: #84bfe3;
+    --tok-type: #e59aa8;
+    --tok-property: #9db6ec;
+    --tok-meta: #c9b77e;
+  }
+}
+
+.tok-keyword, .tok-operatorKeyword, .tok-controlKeyword, .tok-definitionKeyword, .tok-moduleKeyword { color: var(--tok-keyword); }
+.tok-string, .tok-string2, .tok-inserted { color: var(--tok-string); }
+.tok-number, .tok-bool, .tok-atom, .tok-literal { color: var(--tok-number); }
+.tok-comment { color: var(--tok-comment); font-style: italic; }
+.tok-variableName2, .tok-macroName, .tok-function { color: var(--tok-function); }
+.tok-variableName.tok-definition { color: var(--tok-function); }
+.tok-typeName, .tok-className, .tok-namespace { color: var(--tok-type); }
+.tok-propertyName, .tok-labelName { color: var(--tok-property); }
+.tok-meta, .tok-annotation { color: var(--tok-meta); }
+.tok-deleted, .tok-invalid { color: #c0392b; }

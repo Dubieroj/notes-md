@@ -1,0 +1,22 @@
+// Russian strings for CodeMirror's built-in panels (search and replace).
+export const phrases = {
+  "Find": "Найти",
+  "Replace": "Заменить на",
+  "next": "Дальше",
+  "previous": "Назад",
+  "all": "Все",
+  "match case": "Учитывать регистр",
+  "regexp": "Регулярное выражение",
+  "by word": "Слово целиком",
+  "replace": "Заменить",
+  "replace all": "Заменить все",
+  "close": "Закрыть",
+  "current match": "текущее совпадение",
+  "replaced match on line $": "заменено на строке $",
+  "replaced $ matches": "заменено совпадений: $",
+  "on line": "на строке",
+  "Go to line": "Перейти к строке",
+  "go": "Перейти",
+  "Control character": "Управляющий символ",
+  "Selection deleted": "Выделение удалено",
+}

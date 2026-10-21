@@ -1,0 +1,15 @@
+# Сборка (run.sh, swift build, xcodebuild)
+/build/
+/.build/
+/.xcbuild/
+/.xcbuild-test/
+/.swiftpm/
+# Генерируется xcodegen из project.yml
+/Pero.xcodeproj/
+xcuserdata/
+*.xcuserstate
+
+# Зависимости редактора ставит npm ci; собранная страница лежит в Resources/web и хранится в репозитории
+/web/node_modules/
+
+.DS_Store

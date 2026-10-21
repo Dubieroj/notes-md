@@ -1,0 +1,95 @@
+# Проект Xcode для «Заметок.md» с расширениями (виджеты, «Поделиться», Quick Look) и действиями
+# для «Команд». Генерируется командой `xcodegen` и собирается в run.sh; SwiftPM по-прежнему
+# собирает ядро и тесты (swift test). Команду разработчика (DEVELOPMENT_TEAM) передаёт run.sh;
+# со своей командой задайте и свой идентификатор: PERO_BUNDLE_ID=com.example.notes ./run.sh
+name: Pero
+options:
+  bundleIdPrefix: local.pero
+  deploymentTarget:
+    macOS: "15.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MACOSX_DEPLOYMENT_TARGET: "15.0"
+    PERO_BUNDLE_ID: local.pero.markdown
+    CODE_SIGN_STYLE: Automatic
+    MARKETING_VERSION: "2.0"
+    CURRENT_PROJECT_VERSION: "2"
+    ENABLE_HARDENED_RUNTIME: YES
+    DEAD_CODE_STRIPPING: YES
+targets:
+  PeroKit:
+    type: framework
+    platform: macOS
+    sources: [Sources/PeroKit]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(PERO_BUNDLE_ID).kit
+        GENERATE_INFOPLIST_FILE: YES
+        SKIP_INSTALL: YES
+        DEFINES_MODULE: YES
+  Pero:
+    type: application
+    platform: macOS
+    sources:
+      - Sources/Pero
+      - path: Resources/web
+        type: folder
+        buildPhase: resources
+      - path: Resources/AppIcon.icns
+        buildPhase: resources
+      - path: Resources/ru.lproj
+        buildPhase: resources
+      - path: Resources/en.lproj
+        buildPhase: resources
+    settings:
+      base:
+        PRODUCT_NAME: Pero
+        PRODUCT_BUNDLE_IDENTIFIER: $(PERO_BUNDLE_ID)
+        INFOPLIST_FILE: Info.plist
+        CODE_SIGN_ENTITLEMENTS: Support/Pero.entitlements
+        ASSETCATALOG_COMPILER_APPICON_NAME: ""
+        LD_RUNPATH_SEARCH_PATHS: "@executable_path/../Frameworks"
+    dependencies:
+      - target: PeroKit
+      - target: PeroWidgets
+      - target: PeroShare
+      - target: PeroQuickLook
+  PeroWidgets:
+    type: app-extension
+    platform: macOS
+    sources:
+      - Extensions/Widgets
+      - Sources/Pero/SharedContainer.swift
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(PERO_BUNDLE_ID).widgets
+        INFOPLIST_FILE: Support/Widgets-Info.plist
+        CODE_SIGN_ENTITLEMENTS: Support/Extension.entitlements
+        SKIP_INSTALL: YES
+  PeroShare:
+    type: app-extension
+    platform: macOS
+    sources:
+      - Extensions/Share
+      - Sources/Pero/SharedContainer.swift
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(PERO_BUNDLE_ID).share
+        INFOPLIST_FILE: Support/Share-Info.plist
+        CODE_SIGN_ENTITLEMENTS: Support/Extension.entitlements
+        SKIP_INSTALL: YES
+  PeroQuickLook:
+    type: app-extension
+    platform: macOS
+    sources:
+      - Extensions/QuickLook
+      - path: Resources/render/render.js
+        buildPhase: resources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(PERO_BUNDLE_ID).quicklook
+        INFOPLIST_FILE: Support/QuickLook-Info.plist
+        CODE_SIGN_ENTITLEMENTS: Support/QuickLook.entitlements
+        SKIP_INSTALL: YES

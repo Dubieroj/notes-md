@@ -1,0 +1,4 @@
+CFBundleName = "Заметки.md";
+CFBundleDisplayName = "Заметки MD";
+NSHumanReadableCopyright = "Открытый исходный код, общественное достояние (Unlicense).";
+NSAppleEventsUsageDescription = "Доступ к «Заметкам» Apple нужен только для импорта заметок, который вы запускаете сами.";

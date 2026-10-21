@@ -1,0 +1,4 @@
+CFBundleName = "Notes.md";
+CFBundleDisplayName = "Notes MD";
+NSHumanReadableCopyright = "Open source, public domain (Unlicense).";
+NSAppleEventsUsageDescription = "Access to Apple Notes is only used for an import you start yourself.";

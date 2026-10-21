@@ -2,6 +2,8 @@
 
 # Заметки.md
 
+[![Тесты](https://github.com/Dubieroj/notes-md/actions/workflows/tests.yml/badge.svg)](https://github.com/Dubieroj/notes-md/actions/workflows/tests.yml)
+
 > **In English.** Notes.md is an Apple Notes–style app for macOS where every note is a plain Markdown file on disk: folders, tags, smart folders, pinned notes, Recently Deleted, Quick Note, locked notes with Touch ID, widgets, Spotlight. The interface is in Russian. Public domain ([Unlicense](LICENSE)). Build with `./run.sh` (see below).
 
 **Notes.md** — заметки для Mac, как «Заметки» Apple, только каждая заметка — обычный файл Markdown. Папки, смарт-папки, теги, закреплённые, «Недавно удалённые», быстрая заметка, блокировка паролем и Touch ID, виджеты, поиск в Spotlight — а данные остаются простыми `.md`-файлами, которые можно открыть любым редактором и положить в git. Работает офлайн, без аккаунтов и сети.

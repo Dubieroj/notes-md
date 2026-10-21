@@ -1,0 +1,21 @@
+# Юнит-тесты ядра (swift test) на каждый push и pull request. Полная сборка с расширениями
+# и автопроверки приложения (tools/check*.sh) требуют подписи и окна, поэтому идут локально.
+name: Тесты
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  swift-test:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v5
+      - name: Самый новый Xcode на машине (не бета)
+        run: |
+          xcode=$(ls -d /Applications/Xcode_*.app | grep -vi beta | sort -V | tail -1)
+          sudo xcode-select -s "$xcode"
+          xcodebuild -version
+          swift --version
+      - name: swift test
+        run: swift test

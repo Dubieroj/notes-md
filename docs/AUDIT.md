@@ -1,86 +1,88 @@
-# Аудит перед открытием кода
+# Pre-release audit
 
-21 октября 2026 года. Три независимых ревью кода (безопасность, сохранность данных, редактор и расширения), сборка из чистой копии репозитория и прогон всех автопроверок. Каждая находка подтверждена чтением кода или воспроизведением; ниже — что исправлено и что осталось.
+**English** · [Русский](AUDIT.ru.md)
 
-## Исправлено
+October 21, 2026. Three independent code reviews (security; data safety; the editor and extensions), a build from a clean copy of the repository, and a run of every automated check. Each finding was confirmed by reading the code or reproducing it. Below: what was fixed and what remains.
 
-### Безопасность
+## Fixed
 
-| Было | Стало |
+### Security
+
+| Before | After |
 |---|---|
-| Щелчок по ссылке в чужой заметке запускал программу, скрипт или `.app` без вопросов (`[отчёт](run.command)`); ссылки `ssh:`, `smb:` и схемы других приложений открывались сразу | Программы, скрипты и пакеты только показываются в Finder; ссылки кроме http, https и mailto открываются после подтверждения |
-| Импорт ENEX подставлял в заметку содержимое любых локальных файлов через внешние XML-сущности (XXE) | Внешние сущности не загружаются |
-| HTML-экспорт вставлял в файл любой локальный файл, на который ссылалась заметка (`![](~/.ssh/id_rsa)`) | Встраиваются только картинки |
-| PDF и печать: сырой HTML (`<iframe>`) читал любой файл диска в документ, картинки грузились из сети | Страница экспорта получает только картинки и сам документ; остальное, включая сеть, блокируется |
-| Правило «заметки не ходят в сеть» в редакторе не компилировалось (в фильтрах WebKit нет `\|`), удалённые картинки загружались | Правило исправлено; вторая линия — Content-Security-Policy страницы редактора |
-| Тестовый пульт (выполнение JS и действий по JSON-файлам) был в обычной сборке, Hardened Runtime выключен | Пульт только в сборке для автопроверок (`PERO_TEST_HOOKS=1`), Hardened Runtime включён, Web Inspector только в тестовой сборке |
-| `pero://new?folder=../../..`, папка из «Поделиться» и из «Команд» могли создать файл вне библиотеки; имена файлов из «Поделиться» не проверялись | Пути, выходящие из библиотеки, отклоняются |
-| Импорт `.md` копировал в библиотеку любые файлы по ссылкам-картинкам | Копируются только картинки |
-| Ключ заблокированных заметок сохранялся в связке ключей и на Маке без Touch ID | Сохраняется только там, где есть Touch ID и он включён |
-| Слова заблокированной заметки оставались в файле поискового индекса | `secure_delete` в индексе |
-| Скрипт расшифровки показывал пароль при вводе | Пароль не отображается |
+| Clicking a link in someone else’s note launched a program, script or `.app` without asking (`[report](run.command)`); `ssh:`, `smb:` and other apps’ URL schemes opened right away | Programs, scripts and bundles are only revealed in Finder; links other than http, https and mailto ask first |
+| ENEX import pulled the contents of any local file into a note through external XML entities (XXE) | External entities are never loaded |
+| HTML export embedded any local file a note linked to (`![](~/.ssh/id_rsa)`) | Only pictures are embedded |
+| PDF and printing: raw HTML (`<iframe>`) read any file on disk into the document, and pictures were loaded from the network | The export page gets pictures and the document itself; everything else, network included, is blocked |
+| The editor’s “notes never reach the network” rule never compiled (WebKit content-blocker patterns have no `\|`), so remote pictures were loaded | The rule is fixed; a Content-Security-Policy on the editor page is a second line of defense |
+| The test control channel (running JS and actions from JSON files) shipped in the regular build; Hardened Runtime was off | The channel is only in the build for automated checks (`PERO_TEST_HOOKS=1`); Hardened Runtime is on; Web Inspector only in the test build |
+| `pero://new?folder=../../..`, a folder from Share or from Shortcuts could create a file outside the library; file names from Share were not checked | Paths that leave the library are rejected |
+| Importing `.md` copied any files referenced by picture links into the library | Only pictures are copied |
+| The locked-notes key was stored in the keychain even on Macs without Touch ID | Stored only where Touch ID exists and is turned on |
+| Words of a locked note stayed in the search-index file | `secure_delete` in the index |
+| The decryption script echoed the password | The password isn’t echoed |
 
-### Сохранность данных
+### Data safety
 
-| Было | Стало |
+| Before | After |
 |---|---|
-| Удалённая открытая заметка оставалась в памяти; новая заметка с тем же именем открывалась со старым текстом и затирала свой | Сессия исчезнувшей заметки закрывается и больше ничего не пишет |
-| Отдельные окна заметок и «Быстрая заметка» не подхватывали изменения на диске и после переноса, удаления или блокировки могли записать старый текст (в том числе открытым текстом рядом с зашифрованным файлом) | Все открытые заметки следят за диском в одном месте (`SessionStore`) |
-| «Преобразовать в смарт-папку» удаляла папку целиком, вместе с картинками и другими файлами | Папка удаляется, только если в ней ничего не осталось |
-| Перенос папки ломал все относительные ссылки внутри неё; ссылки между несколькими переносимыми заметками тоже | Ссылки на перемещаемое идут следом (юнит-тесты) |
-| Заметка в Windows-1251 не сохранялась после ввода эмодзи; в отдельных окнах — молча, с потерей правок | Заметка переходит на UTF-8 |
-| Заметку-симлинк нельзя было сохранить | Запись идёт в файл, на который указывает ссылка |
-| Нечитаемый `state.json` молча заменялся пустым (терялись закреплённые и смарт-папки); записи корзины из него использовались как пути (`"../.."` удалял библиотеку) | Нечитаемый файл откладывается рядом; записи корзины проверяются |
-| Стёртое название заменяло ссылки `[[Название]]` в других заметках на `[[]]` | Пустое название ссылки не трогает |
-| «Заблокировать» сразу после правки названия ничего не делало | Блокируется переименованный файл |
-| Опустошённая существующая заметка удалялась насовсем (и в папках с диска) | Уходит в «Недавно удалённые»; бесследно исчезает только новая пустая |
-| Смена регистра в названии давала «Hello 2.md» | Переименование на месте |
-| Две удалённые заметки с одинаковым путём восстанавливались и удалялись вместе | Действие касается одной |
-| Библиотеку можно было перенести в её же подпапку | Запрещено |
+| An open note that was deleted stayed in memory; a new note with the same name then opened with the old text and overwrote its own | The session of a vanished note is closed and never writes again |
+| Separate note windows and Quick Note didn’t pick up changes on disk, and after a move, deletion or locking could write old text back (including as plain text next to the encrypted file) | All open notes follow the disk in one place (`SessionStore`) |
+| Convert to Smart Folder deleted the whole folder, pictures and other files included | The folder is removed only if nothing is left in it |
+| Moving a folder broke every relative link inside it; so did moving several notes that link to each other | Links to what moves follow it (unit tests) |
+| A Windows-1251 note couldn’t be saved after typing an emoji; in separate windows silently, losing the edits | The note switches to UTF-8 |
+| A symlinked note couldn’t be saved | The write goes to the file the link points to |
+| An unreadable `state.json` was silently replaced with an empty one (losing pins and smart folders); its trash entries were used as paths (`"../.."` deleted the library) | An unreadable file is set aside; trash entries are validated |
+| A cleared title turned `[[Title]]` links in other notes into `[[]]` | An empty title leaves links alone |
+| Lock Note right after editing the title did nothing | The renamed file is locked |
+| An existing note that was emptied was deleted for good (also in folders from disk) | It goes to Recently Deleted; only a new blank note vanishes |
+| Changing only the letter case of a title produced “Hello 2.md” | Renamed in place |
+| Two deleted notes with the same path were restored and deleted together | Actions apply to one |
+| The library could be moved into its own subfolder | Not allowed |
 
-### Редактор
+### Editor
 
-- Пустые `<u></u>`, `[](url)`, `[[Заметка|]]` и ссылки или картинки, разбитые переносом строки, роняли оформление заметки целиком.
-- Стили абзаца переписывали код внутри блоков кода и front matter; «Моноширинный» склеивал соседние блоки кода; ⌘0–⌘6 работали иначе, чем меню.
-- Сортировка чек-листа уводила пункты из-под родителя и могла сработать в другой заметке.
-- Подсказка `>>` съедала текст во вложенных цитатах и в коде.
-- Изменение размера картинки портило адреса в `<…>` и теряло заголовок.
-- Текст расшифрованной заблокированной заметки оставался в кэше страницы после закрытия.
-- Заглушки вставленных картинок могли перепутаться; SVG и WebP сохранялись как `.jpg`.
-- Таблицы: Enter в таблице из одной шапки, Tab из последней ячейки, вставка столбца слева и справа без крайних `|`.
-- Вставленный код с ```` ``` ```` выходил из блока; Quick Look больше не грузит картинки из сети.
-- «Поделиться» двумя файлами с одинаковым именем больше не падает.
+- An empty `<u></u>`, `[](url)`, `[[Note|]]`, and links or pictures broken across a line took down the formatting of the whole note.
+- Paragraph styles rewrote code inside code blocks and front matter; Monostyled merged neighboring code blocks; ⌘0–⌘6 behaved differently from the menu.
+- Checklist sorting pulled items out from under their parent and could run in a different note.
+- The `>>` suggestion ate text in nested quotes and in code.
+- Resizing a picture broke `<…>` destinations and dropped the title.
+- The text of a decrypted locked note stayed in the page cache after closing.
+- Placeholders of pasted pictures could get mixed up; SVG and WebP were saved as `.jpg`.
+- Tables: Enter in a header-only table, Tab from the last cell, inserting a column left or right without outer `|`.
+- Pasted code containing ```` ``` ```` escaped its block; Quick Look no longer loads pictures from the network.
+- Sharing two files with the same name no longer fails.
 
-### Репозиторий
+### Repository
 
-- Нет личных данных: имён, путей, идентификаторов команды и сертификата. Команда подписи определяется при сборке, App Group — `$(TeamIdentifierPrefix)local.pero`.
-- `.gitignore`; сборка из чистой копии проходит, страница редактора пересобирается байт в байт.
-- Лицензия Unlicense, тексты лицензий сторонних библиотек собираются при сборке.
-- Описан формат заблокированных заметок и есть скрипт расшифровки без приложения.
-- Ноль предупреждений компилятора; 38 юнит-тестов и обе автопроверки, в том числе новые сценарии для находок выше.
+- No personal data: names, paths, team and certificate IDs. The signing team is found at build time; the App Group is `$(TeamIdentifierPrefix)local.pero`.
+- `.gitignore`; a build from a clean copy works, and the editor page rebuilds byte for byte.
+- Unlicense; the licenses of third-party libraries are collected at build time.
+- The format of locked notes is documented, and a script decrypts them without the app.
+- Zero compiler warnings; 38 unit tests and both app checks, including new scenarios for the findings above.
 
-## Осталось
+## Remaining
 
-**Безопасность**
-- Для Touch ID ключ лежит в обычной связке ключей, а отпечаток проверяет само приложение. Надёжнее хранить его в data-protection keychain с доступом `.biometryCurrentSet`; это требует проверки на живом Маке с Touch ID.
-- В формате заблокированных заметок название и версия не связаны с шифртекстом (нет AAD): зашифрованные части можно переставить между заметками. Нужен формат версии 2.
-- Резервная копия архивирует библиотеку целиком, вместе с кэшем `.pero/cache`.
+**Security**
+- For Touch ID the key lives in the regular keychain and the app itself checks the fingerprint. Storing it in the data-protection keychain with `.biometryCurrentSet` access would be safer; this needs testing on a real Mac with Touch ID.
+- In the locked-note format the title and version aren’t bound to the ciphertext (no AAD): encrypted parts can be swapped between notes. This needs format version 2.
+- Backups archive the whole library, including the `.pero/cache` index.
 
-**Данные**
-- Нет копии при конфликте: если файл изменился на диске, пока в заметке есть несохранённые правки, сохранение их перезапишет (STO-03).
-- Переименование заметки обновляет ссылки `[[Название]]`, даже если они ведут к другой заметке с тем же названием.
-- Сбой посреди удаления в корзину или восстановления оставляет учёт (`state.json`, индекс) не обновлённым до перезапуска.
-- Перенос заметок в другую библиотеку при сбое посередине оставляет часть копий в обеих; заблокированные заметки пропускаются без сообщения.
-- После смены папки библиотеки отдельные окна заметок и «Быстрая заметка» продолжают работать со старой. Заблокированные заметки в папках с диска открываются паролем главной библиотеки и после «Начать с пустой» не откроются (их можно открыть, вернувшись к прежней папке).
-- Строки «Недавно удалённых» по-прежнему различаются по исходному пути; при совпадении открывается первая.
+**Data**
+- No conflict copy: if a file changes on disk while the note has unsaved edits, saving overwrites the change (STO-03).
+- Renaming a note updates `[[Title]]` links even when they point to a different note with the same title.
+- A failure halfway through moving notes to the trash or restoring them leaves the bookkeeping (`state.json`, the index) stale until the next launch.
+- Moving notes to another library leaves copies in both if it fails halfway; locked notes are skipped without a message.
+- After switching the library folder, separate note windows and Quick Note keep working with the old one. Locked notes in folders from disk open with the main library’s password and can’t be opened after “Start Empty” (they open again after switching back to the old folder).
+- Rows in Recently Deleted are still told apart by their original path; when two match, the first one opens.
 
-**Редактор и расширения**
-- Большие заметки: счётчик слов пересчитывает весь текст после каждой правки, таблицы перестраиваются при каждом движении курсора, заметка в двух окнах гоняет весь текст при каждом нажатии.
-- Вставленные и перетащенные файлы передаются из страницы целиком в base64; поиск дубликата вложения читает файлы в главном потоке.
-- Quick Look без ограничения размера; файлы в UTF-16 и Latin-1 читаются как Windows-1251.
-- Неиспользуемый код: `rekey` и часть команд редактора, которые Swift не вызывает. Подсказка тегов `#` срабатывает и внутри кода.
+**Editor and extensions**
+- Large notes: the word count recounts the whole text after every edit, tables are rebuilt on every cursor move, and a note open in two windows sends its whole text on every keystroke.
+- Pasted and dropped files travel from the page in full as base64; finding a duplicate attachment reads files on the main thread.
+- Quick Look has no size limit; UTF-16 and Latin-1 files are read as Windows-1251.
+- Unused code: `rekey` and some editor commands Swift never calls. Tag suggestions after `#` also appear inside code.
 
-**Проект**
-- Перевод: ключи — русские строки, английский — в `en.lproj/Localizable.strings` приложения и расширений, у редактора — в `web/src/i18n.js`. Новая строка без перевода покажется англоязычным по-русски; проверить можно сборкой с `SWIFT_EMIT_LOC_STRINGS=YES` и сверкой ключей.
-- CI запускает только `swift test` (`.github/workflows/tests.yml`); полная сборка с расширениями и автопроверки приложения требуют подписи и окна и идут локально.
-- Нет адреса для сообщений об уязвимостях (`SECURITY.md`).
+**Project**
+- Translations: the keys are the Russian strings; English lives in the `en.lproj/Localizable.strings` of the app and the extensions, and the editor’s in `web/src/i18n.js`. A new string without a translation shows up in Russian for English users; to check, build with `SWIFT_EMIT_LOC_STRINGS=YES` and compare the keys.
+- CI runs only `swift test` (`.github/workflows/tests.yml`); the full build with extensions and the app checks need signing and a window, and run locally.
+- No address for reporting vulnerabilities (`SECURITY.md`).

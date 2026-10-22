@@ -1,98 +1,99 @@
 <p align="center"><img src="docs/icon.png" width="128" alt=""></p>
 
-# Заметки.md
+# Notes.md
 
-[![Тесты](https://github.com/Dubieroj/notes-md/actions/workflows/tests.yml/badge.svg)](https://github.com/Dubieroj/notes-md/actions/workflows/tests.yml)
+[![Tests](https://github.com/Dubieroj/notes-md/actions/workflows/tests.yml/badge.svg)](https://github.com/Dubieroj/notes-md/actions/workflows/tests.yml)
 
-> **In English.** Notes.md is an Apple Notes–style app for macOS where every note is a plain Markdown file on disk: folders, tags, smart folders, pinned notes, Recently Deleted, Quick Note, locked notes with Touch ID, widgets, Spotlight. The interface is in English and Russian, following the system language. Public domain ([Unlicense](LICENSE)). Build with `./run.sh` (see below).
+**English** · [Русский](README.ru.md)
 
-**Notes.md** — заметки для Mac, как «Заметки» Apple, только каждая заметка — обычный файл Markdown. Папки, смарт-папки, теги, закреплённые, «Недавно удалённые», быстрая заметка, блокировка паролем и Touch ID, виджеты, поиск в Spotlight — а данные остаются простыми `.md`-файлами, которые можно открыть любым редактором и положить в git. Работает офлайн, без аккаунтов и сети.
+**Notes.md** is a Mac notes app that works like Apple Notes, except every note is a plain Markdown file. Folders, smart folders, tags, pinned notes, Recently Deleted, Quick Note, locked notes with a password and Touch ID, widgets and Spotlight search — while your data stays as simple `.md` files you can open in any editor and keep in git. It works offline, with no accounts and no network.
 
-**Открытый исходный код.** Код передан в общественное достояние ([Unlicense](LICENSE)): берите, меняйте, встраивайте, продавайте — без условий и без упоминания автора.
+**Open source.** The code is dedicated to the public domain ([Unlicense](LICENSE)): take it, change it, embed it, sell it — no conditions, no attribution required.
 
-Концепция и ТЗ — в [docs/SPEC.md](docs/SPEC.md), формат заблокированных заметок — в [docs/locked-format.md](docs/locked-format.md), аудит перед открытием кода и известные проблемы — в [docs/AUDIT.md](docs/AUDIT.md).
+The interface is in English and Russian, following the system language. Further reading: the format of locked notes in [docs/locked-format.md](docs/locked-format.md), the pre-release audit and known issues in [docs/AUDIT.md](docs/AUDIT.md), and the original design spec (in Russian) in [docs/SPEC.md](docs/SPEC.md).
 
-## Сборка
+## Building
 
-Нужна macOS 15 или новее и Xcode (проверено с Xcode 26.3, Swift 6.2).
+You need macOS 15 or later and Xcode (tested with Xcode 26.3, Swift 6.2).
 
 ```bash
 ./run.sh
 ```
 
-Скрипт собирает `build/Notes MD.app` и запускает его.
+The script builds `build/Notes MD.app` and launches it.
 
-- **Полное приложение** с расширениями (виджеты, «Поделиться», Quick Look для `.md`, действия для «Команд» и Siri) собирается, если есть `xcodegen` (`brew install xcodegen`) и сертификат Apple Development — подойдёт бесплатный, из Xcode ▸ Settings ▸ Accounts. Команду разработчика скрипт берёт из сертификата, другую можно задать так: `PERO_TEAM=XXXXXXXXXX ./run.sh`. Идентификатор `local.pero.markdown` занят командой автора, поэтому со своей командой задайте свой: `PERO_BUNDLE_ID=com.example.notes ./run.sh`.
-- **Без xcodegen или сертификата** (или с `PERO_SPM=1`) собирается только приложение, через SwiftPM, без расширений.
-- **Node.js** нужен только при правках в `web/`: собранная страница редактора уже лежит в `Resources/web`, а `run.sh` пересобирает её, если `npm` есть.
-- **Тесты**: `swift test` для ядра и две автопроверки приложения из раздела «Как устроено».
+- **The full app** with its extensions (widgets, Share, Quick Look for `.md`, Shortcuts and Siri actions) is built when `xcodegen` (`brew install xcodegen`) and an Apple Development certificate are available — a free one from Xcode ▸ Settings ▸ Accounts will do. The script takes the development team from the certificate; to use another one: `PERO_TEAM=XXXXXXXXXX ./run.sh`. The bundle identifier `local.pero.markdown` belongs to the author's team, so with your own team set your own: `PERO_BUNDLE_ID=com.example.notes ./run.sh`.
+- **Without xcodegen or a certificate** (or with `PERO_SPM=1`) only the app itself is built, with SwiftPM, without extensions.
+- **Node.js** is only needed when you change `web/`: the built editor page is already in `Resources/web`, and `run.sh` rebuilds it when `npm` is available.
+- **Tests**: `swift test` for the core, plus the two app checks described under [How it’s built](#how-its-built).
 
-Заметки лежат в `~/Library/Application Support/Pero/Library`. Другую папку можно выбрать в настройках: приложение предложит перенести туда заметки, начать с пустой или открыть её как готовую библиотеку и сразу переключится, без перезапуска.
+Notes live in `~/Library/Application Support/Pero/Library`. You can pick another folder in Settings: the app offers to move your notes there, start empty, or open the folder as an existing library, and switches right away without a restart.
 
-## Что умеет
+## Features
 
-**Как в Notes**
+**Like Apple Notes**
 
-- **Три колонки**: папки, список заметок, заметка. Название заметки — её первая строка, файл называется так же.
-- **Папки и вложенные папки** (⇧⌘N), перетаскивание заметок и папок, переименование на месте, «Показать в Finder». Папка в приложении — это папка на диске.
-- **Список и галерея** (⌘1 / ⌘2), разделы «Закреплённые» и группы по датам (Сегодня, Вчера, Предыдущие 7 дней…), сортировка по дате изменения, создания или названию — общая или своя для папки.
-- **Закрепление**, **дублирование** (⌘D), **отдельное окно** заметки (двойной щелчок), свайпы двумя пальцами в списке: вправо — закрепить, влево — удалить или поделиться.
-- **Недавно удалённые**: заметки хранятся 30 дней, их можно восстановить или удалить навсегда; удаление отменяется ⌘Z.
-- **Теги** `#тег` прямо в тексте, браузер тегов в боковой панели, переименование и удаление тега во всех заметках сразу.
-- **Смарт-папки** с фильтрами Notes: теги, даты создания и изменения, чек-листы, вложения, папки, быстрые, закреплённые, заблокированные; «все фильтры» или «любой». «Преобразовать в смарт-папку».
-- **Поиск** по всем заметкам (⌥⌘F): по началу слов, «ё» и «е» не различаются. Поиск в заметке с заменой (⌘F).
-- **Формат с клавишами Notes**: Название ⇧⌘T, Заголовок ⇧⌘H, Подзаголовок ⇧⌘J, Основной текст ⇧⌘B, Моноширинный ⇧⌘M, списки ⇧⌘7/8/9, цитата ⌘', чек-лист ⇧⌘L, отметить пункт ⇧⌘U, таблица ⌥⌘T, разделитель ⌘L, ⌘B/⌘I/⌘U/⇧⌘X, выделение ⇧⌘E, ссылка ⌘K, уровень ⌘] / ⌘[ и Tab, перенос пунктов ⌃⌘↑/↓. Всё пишется обычным Markdown (таблица — в ТЗ, раздел 1.5).
-- **Чек-листы** с круглыми отметками, «Отметить все», «Переместить отмеченные вниз», автосортировка отмеченных (в настройках).
-- **Таблицы** рисуются сеткой; в таблице работают клавиши Notes: Tab/⇧Tab по ячейкам, ↩ — строка ниже, ⌥⌘стрелки — новая строка или столбец.
-- **Ссылки на заметки**: `>>` или `[[` показывает список заметок; щелчок по ссылке открывает заметку, ⌥⌘[ / ⌥⌘] — назад и вперёд. Ссылка на раздел: `[[Заметка#Раздел]]`. При переименовании заметки ссылки на неё обновляются.
-- **Вложения**: картинки, PDF и любые файлы перетаскиванием, вставкой или «Прикрепить файл» (⇧⌘A) уходят в папку `Attachments`; у картинки есть ручка для изменения размера. «Вставить с iPhone или iPad» (фото, скан, рисунок через Continuity Camera). Все вложения библиотеки — ⌘3.
-- **Сворачивание разделов** под заголовками (стрелка слева от заголовка).
-- **Быстрая заметка** ⌃⌥⌘N из любого приложения: маленькое окно поверх всех, на всех рабочих столах.
-- **Блокировка заметок** паролем и Touch ID: текст шифруется (AES-256-GCM), название видно, как в Notes. «Закрыть заблокированные» и автоблокировка после бездействия, сна и блокировки экрана.
-- **Импорт**: Markdown и текст (с картинками, со структурой папок), RTF, RTFD, HTML, Evernote (ENEX), «Импорт из «Заметок» Apple» через AppleScript.
-- **Экспорт** (PDF, Markdown с вложениями, HTML одним файлом, текст) для одной заметки, нескольких или папки целиком; **печать** (⌘P); «Поделиться» и AirDrop.
-- **Копирование и вставка**: ⌘C кладёт и Markdown, и оформленный текст; вставка из браузера, Pages или Google Docs превращается в Markdown; «Скопировать как Markdown»; «Вставить и согласовать стиль» (⌥⇧⌘V).
-- **Язык интерфейса** — русский или английский, по языку системы; для остальных языков — английский. Папки, которые приложение создаёт само («Быстрые заметки», «Импортированные заметки»), в новой библиотеке называются на языке интерфейса, а в существующей остаются как были.
-- **Масштаб** текста (⇧⌘. / ⇧⌘, / ⇧⌘0), светлая и тёмная тема по системе, настройки Notes (⌘,).
-- **macOS**: заметки в Spotlight, виджеты «Заметка», «Папка», «Закреплённые», «Поделиться ▸ Заметки.md» из любого приложения, действия в «Командах» и Siri («Создай заметку в Заметках.md»), Quick Look для любого `.md` в Finder.
+- **Three columns**: folders, the note list, the note. A note’s title is its first line, and the file is named after it.
+- **Folders and subfolders** (⇧⌘N), drag and drop of notes and folders, inline renaming, Show in Finder. A folder in the app is a folder on disk.
+- **List and gallery** (⌘1 / ⌘2), a Pinned section and date groups (Today, Yesterday, Previous 7 Days…), sorting by date edited, date created or title — globally or per folder.
+- **Pinning**, **duplicating** (⌘D), a note in **its own window** (double-click), two-finger swipes in the list: right to pin, left to delete or share.
+- **Recently Deleted**: notes are kept for 30 days and can be restored or deleted permanently; ⌘Z undoes a deletion.
+- **Tags** written as `#tag` right in the text, a tag browser in the sidebar, renaming and deleting a tag across all notes at once.
+- **Smart folders** with the Notes filters: tags, dates created and edited, checklists, attachments, folders, Quick Notes, pinned, locked; match all filters or any. Convert to Smart Folder.
+- **Search** across all notes (⌥⌘F), matching word beginnings. Find and replace within a note (⌘F).
+- **Formatting with the Notes shortcuts**: Title ⇧⌘T, Heading ⇧⌘H, Subheading ⇧⌘J, Body ⇧⌘B, Monostyled ⇧⌘M, lists ⇧⌘7/8/9, block quote ⌘', checklist ⇧⌘L, mark as checked ⇧⌘U, table ⌥⌘T, divider ⌘L, ⌘B/⌘I/⌘U/⇧⌘X, highlight ⇧⌘E, link ⌘K, indent ⌘] / ⌘[ and Tab, move items ⌃⌘↑/↓. Everything is written as plain Markdown.
+- **Checklists** with round checkboxes, Check All, Move Checked to Bottom, and automatic sorting of checked items (in Settings).
+- **Tables** drawn as a grid, with the Notes keys: Tab/⇧Tab between cells, ↩ for the next row, ⌥⌘arrows for a new row or column.
+- **Links between notes**: `>>` or `[[` shows a list of notes; clicking a link opens the note, ⌥⌘[ / ⌥⌘] go back and forward. Link to a section: `[[Note#Section]]`. Renaming a note updates the links to it.
+- **Attachments**: pictures, PDFs and any files go into the `Attachments` folder by drag and drop, paste or Attach File (⇧⌘A); pictures have a resize handle. Insert from iPhone or iPad (photo, scan or sketch via Continuity Camera). All attachments of the library: ⌘3.
+- **Collapsible sections** under headings (the arrow next to a heading).
+- **Quick Note** with ⌃⌥⌘N from any app: a small window above everything, on every desktop.
+- **Locked notes** with a password and Touch ID: the text is encrypted (AES-256-GCM), the title stays visible, as in Notes. Close All Locked Notes, and automatic locking after inactivity, sleep and screen lock.
+- **Import**: Markdown and text (with pictures and folder structure), RTF, RTFD, HTML, Evernote (ENEX), and Import from Apple Notes via AppleScript.
+- **Export** (PDF, Markdown with attachments, single-file HTML, plain text) for one note, several, or a whole folder; **printing** (⌘P); Share and AirDrop.
+- **Copy and paste**: ⌘C puts both Markdown and formatted text on the clipboard; pasting from a browser, Pages or Google Docs becomes Markdown; Copy as Markdown; Paste and Match Style (⌥⇧⌘V).
+- **Interface language**: English or Russian, following the system; English for all other languages. Folders the app creates itself (Quick Notes, Imported Notes) get names in the interface language in a new library, and keep their names in an existing one.
+- **Text size** (⇧⌘. / ⇧⌘, / ⇧⌘0), light and dark appearance following the system, Notes-style Settings (⌘,).
+- **macOS integration**: notes in Spotlight, Note, Folder and Pinned widgets, Share ▸ Notes.md from any app, Shortcuts and Siri actions (“New note in Notes.md”), Quick Look for any `.md` in Finder.
 
-**Что добавляет Markdown**
+**What Markdown adds**
 
-- **Живое оформление**: разметка скрыта и видна только у элемента под курсором. Режим исходника — ⌘/.
-- **Без порчи разметки**: нетронутые места файла остаются байт в байт (кодировка UTF-8 или Windows-1251, BOM, переводы строк Windows).
-- **Файлы вместо базы**: библиотеку можно открыть в Finder, положить в git, править другими программами — приложение подхватывает изменения на лету. База SQLite — только индекс для поиска, её можно удалить.
-- **Подсказки** имён заметок после `[[` / `>>`, тегов после `#`, языков после ```` ``` ````; подсветка кода для ~100 языков.
-- **Папки с диска**: «Файл ▸ Подключить папку с диска…» (или кнопка внизу боковой панели) показывает любую папку с `.md`-файлами в разделе «Папки на диске». Заметки правятся прямо в этих файлах, ничего не копируется; индекс и корзину для такой папки приложение хранит у себя, а имена файлов в ней не меняет. Заметку можно перенести между папкой с диска и библиотекой — картинки переедут вместе с ней. «Отключить папку» не трогает файлы.
-- **Картинки и файлы по любому пути**: `![](/Users/…/скан.png)`, `![](~/Pictures/…)` и ссылки `file://` показываются в заметке и открываются по щелчку.
-- **Цвета тегов**, счётчик слов и время чтения (в настройках), резервная копия в iCloud Drive по расписанию.
+- **Live formatting**: markup is hidden and shows only for the element under the cursor. Source mode: ⌘/.
+- **No damage to your Markdown**: untouched parts of a file stay byte for byte the same (UTF-8 or Windows-1251, BOM, Windows line endings).
+- **Files instead of a database**: open the library in Finder, put it in git, edit it with other apps — changes are picked up live. The SQLite database is only a search index and can be deleted.
+- **Suggestions** for note names after `[[` / `>>`, tags after `#`, and languages after ```` ``` ````; syntax highlighting for about 100 languages.
+- **Folders from disk**: File ▸ Connect Folder from Disk… (or the button at the bottom of the sidebar) shows any folder of `.md` files under Folders on Disk. Notes are edited right in those files and nothing is copied; the app keeps the index and trash for such a folder on its side and never renames the files in it. Notes can be moved between a folder from disk and the library, pictures included. Disconnect Folder leaves the files alone.
+- **Pictures and files at any path**: `![](/Users/…/scan.png)`, `![](~/Pictures/…)` and `file://` links are shown in the note and open on click.
+- **Tag colors**, a word count and reading time (in Settings), and scheduled backups to iCloud Drive.
 
-**Любой Markdown-файл из Finder** (`.md`, `.markdown`, `.mdown`, `.mkd`, `.mkdn`, `.mdwn`, `.mdtxt`, `.mdtext`, в том числе только для чтения) открывается в отдельном окне-редакторе с деревом папки и оглавлением; заметки библиотеки и папок с диска — в главном окне. Если файл дописывает другая программа (например, программа расшифровки речи), текст обновляется на месте. Чтобы Finder открывал все такие файлы здесь, — «Настройки ▸ Файлы Markdown ▸ Открывать в Заметках.md».
+**Any Markdown file from Finder** (`.md`, `.markdown`, `.mdown`, `.mkd`, `.mkdn`, `.mdwn`, `.mdtxt`, `.mdtext`, read-only ones included) opens in its own editor window with a folder tree and an outline; notes from the library and from connected folders open in the main window. If another app keeps appending to the file (a speech-to-text app, say), the text updates in place. To have Finder open all such files here: Settings ▸ Markdown files ▸ Open in Notes.md.
 
-В Finder, Launchpad и Dock приложение называется «Заметки MD» (Notes MD): имя, которое кончается на «.md», macOS показывала бы с хвостом «.app», чтобы его не спутали с документом. В строке меню и в окне «О программе» — «Заметки.md».
+In Finder, Launchpad and the Dock the app is called “Notes MD”: macOS would show a name ending in “.md” with “.app” appended, so it can’t be mistaken for a document. The menu bar and the About window say “Notes.md”.
 
-## Открытый код
+## Open source
 
-- Лицензия — [Unlicense](LICENSE): код в общественном достоянии. Можно делать что угодно — форкать, переименовывать, продавать, встраивать в закрытые программы; разрешение и упоминание автора не нужны.
-- Сторонние библиотеки редактора (CodeMirror, Lezer, markdown-it и их зависимости) — под своими лицензиями (MIT, BSD-2-Clause, PSF-2.0). Их тексты `web/build.mjs` собирает при каждой сборке в [Resources/web/third-party-licenses.txt](Resources/web/third-party-licenses.txt), этот файл лежит и внутри приложения.
-- Знак Markdown на иконке нарисовал Дастин Кёртис и передал в общественное достояние (CC0). Иконку рисует `tools/make-icon.swift`.
-- Внутреннее имя проекта — Pero: так называются цели сборки (`Pero`, `PeroKit`), идентификатор `local.pero.markdown`, схема `pero://` и служебная папка `.pero/`. Их не меняли, чтобы настройки, пароли и библиотеки прежних версий открывались как раньше.
-- Правки приветствуются. Перед отправкой прогоните `swift test`, `tools/check-library.sh` и `tools/check.sh`.
+- License: [Unlicense](LICENSE) — the code is in the public domain. Do anything with it: fork, rename, sell, embed in closed-source apps; no permission or attribution needed.
+- The editor’s third-party libraries (CodeMirror, Lezer, markdown-it and their dependencies) keep their own licenses (MIT, BSD-2-Clause, PSF-2.0). `web/build.mjs` collects their texts on every build into [Resources/web/third-party-licenses.txt](Resources/web/third-party-licenses.txt), which also ships inside the app.
+- The Markdown mark in the icon was drawn by Dustin Curtis and dedicated to the public domain (CC0). The icon is drawn by `tools/make-icon.swift`.
+- The project’s internal name is Pero: it is used by the build targets (`Pero`, `PeroKit`), the identifier `local.pero.markdown`, the `pero://` scheme and the `.pero/` data folder. They were kept so that settings, passwords and libraries from earlier versions keep working.
+- Interface strings are written in Russian in the code and serve as translation keys; English lives in `Resources/en.lproj/Localizable.strings` (and the extensions’ own `en.lproj`), the editor’s in `web/src/i18n.js`.
+- Contributions are welcome. Before sending one, run `swift test`, `tools/check-library.sh` and `tools/check.sh`.
 
-## Как устроено
+## How it’s built
 
-- `Sources/PeroKit/` — ядро без интерфейса: библиотека файлов, разбор заметок (название, теги, ссылки, задачи), индекс SQLite с полнотекстовым поиском, корзина, смарт-папки, шифрование, переписывание путей и ссылок. Покрыто тестами (`swift test`).
-- `Sources/Pero/` — приложение на AppKit: главное окно, списки, боковая панель, сессии заметок с автосохранением, меню, импорт и экспорт, блокировка, быстрая заметка, Spotlight, действия «Команд», окно внешних `.md`.
-- `web/src/` — редактор на [CodeMirror 6](https://codemirror.net) в `WKWebView`: оформление (`livepreview.js`), команды Notes (`notes.js`), синтаксис `==выделения==`, `[[ссылок]]` и `#тегов` (`syntax.js`), подсказки, буфер обмена, экспорт через [markdown-it](https://github.com/markdown-it/markdown-it). Страница грузит только `pero://`; картинки из интернета не загружаются.
-- `Extensions/` — виджеты, «Поделиться», Quick Look. Проект Xcode генерируется из `project.yml`.
-- `tools/check-library.sh` — автопроверка заметок: запускает отдельный экземпляр на временной библиотеке и проходит сценарии как пользователь (создание, формат, `>>`, закрепление, поиск, перенос, корзина, внешние правки, экспорт, импорт, смарт-папка, блокировка, папка с диска, картинки по абсолютному пути, смена папки библиотеки), сверяя файлы на диске.
-- `tools/check.sh` — автопроверка окна внешнего `.md`-файла, в том числе «открыл — сохранил — те же байты» на своих файлах: `tools/check.sh ~/путь/к/*.md`.
+- `Sources/PeroKit/` — the core, no UI: the file library, note parsing (title, tags, links, tasks), the SQLite index with full-text search, the trash, smart folders, encryption, rewriting of paths and links. Covered by tests (`swift test`).
+- `Sources/Pero/` — the AppKit app: the main window, lists, sidebar, note sessions with autosave, menus, import and export, locking, Quick Note, Spotlight, Shortcuts actions, the window for external `.md` files.
+- `web/src/` — the editor, [CodeMirror 6](https://codemirror.net) in a `WKWebView`: live formatting (`livepreview.js`), Notes commands (`notes.js`), syntax for `==highlights==`, `[[links]]` and `#tags` (`syntax.js`), suggestions, clipboard, export through [markdown-it](https://github.com/markdown-it/markdown-it). The page loads only from `pero://`; pictures from the internet are not loaded.
+- `Extensions/` — widgets, Share, Quick Look. The Xcode project is generated from `project.yml`.
+- `tools/check-library.sh` — an end-to-end check of the notes: it starts a separate instance on a temporary library and goes through scenarios like a user would (creating, formatting, `>>`, pinning, search, moving, trash, external edits, export, import, smart folders, locking, folders from disk, pictures at absolute paths, switching the library folder), checking the files on disk.
+- `tools/check.sh` — a check of the window for external `.md` files, including “open, save, same bytes” on your own files: `tools/check.sh ~/path/to/*.md`.
 
-Обе автопроверки собирают свою копию приложения с тестовым пультом (`PERO_TEST_HOOKS=1 ./run.sh`, в `build/test/`; в обычной сборке пульта нет), работают на временных папках и не трогают настоящие заметки и установленное приложение.
+Both checks build their own copy of the app with a test control channel (`PERO_TEST_HOOKS=1 ./run.sh`, into `build/test/`; the regular build doesn’t have it), work in temporary folders, and never touch your real notes or the installed app.
 
-## Ограничения
+## Limitations
 
-- Таблицы правятся в исходнике: щелчок по ячейке показывает строку таблицы с курсором в ней.
-- Выделение текста одного цвета (в Notes пять), шрифты и цвета текста не переносятся — в Markdown их нет.
-- Заблокировать можно заметку без вложений: шифруется только текст. Заблокированные заметки в папках с диска открываются паролем библиотеки.
-- Пока нет Math Notes, записи аудио с расшифровкой и рисования трекпадом; Handoff не поддерживается (нужна iOS-версия).
-- Формулы, сноски и диаграммы остаются текстом.
+- Tables are edited as source: clicking a cell shows that table row with the cursor in it.
+- Highlighting comes in one color (Notes has five); fonts and text colors don’t carry over — Markdown has none.
+- Only notes without attachments can be locked: only the text is encrypted. Locked notes in folders from disk open with the library’s password.
+- No Math Notes, audio recording with transcription or trackpad drawing yet; Handoff isn’t supported (it would need an iOS version).
+- Formulas, footnotes and diagrams stay as text.

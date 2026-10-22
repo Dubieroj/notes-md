@@ -1,35 +1,37 @@
-# Формат заблокированных заметок
+# Locked-note format
 
-Заблокированная заметка — файл `Название.pero-locked` рядом с обычными `.md`. Формат открытый: расшифровать заметку можно и без приложения, скриптом [`tools/decrypt-locked.swift`](../tools/decrypt-locked.swift):
+**English** · [Русский](locked-format.ru.md)
+
+A locked note is a file `Title.pero-locked` next to the regular `.md` files. The format is open: a note can be decrypted without the app, with [`tools/decrypt-locked.swift`](../tools/decrypt-locked.swift):
 
 ```bash
-swift tools/decrypt-locked.swift ~/Library/Application\ Support/Pero/Library/.pero/lock.json Секрет.pero-locked
+swift tools/decrypt-locked.swift ~/Library/Application\ Support/Pero/Library/.pero/lock.json Secret.pero-locked
 ```
 
-Скрипт спрашивает пароль (читает его из стандартного ввода) и печатает Markdown заметки.
+The script asks for the password (or reads it from standard input) and prints the note’s Markdown.
 
-## Ключи
+## Keys
 
-Все шифрование — AES-256-GCM без дополнительных данных (AAD). Зашифрованный блок везде хранится в виде CryptoKit «combined»: 12 байт nonce, затем шифртекст, затем 16 байт тега.
+All encryption is AES-256-GCM without additional authenticated data (AAD). Every encrypted block is stored in CryptoKit’s “combined” form: a 12-byte nonce, then the ciphertext, then the 16-byte tag.
 
-1. **Ключ из пароля.** PBKDF2-HMAC-SHA256 от пароля в UTF-8, соль 16 случайных байт, 600 000 итераций (число берётся из `lock.json`), длина ключа 32 байта.
-2. **Мастер-ключ библиотеки** — 32 случайных байта, зашифрованные ключом из пароля. Смена пароля перешифровывает только его, заметки не трогаются.
-3. **Ключ заметки** — свои 32 случайных байта у каждой заметки, зашифрованные мастер-ключом.
-4. **Текст заметки** зашифрован ключом заметки.
+1. **Password key.** PBKDF2-HMAC-SHA256 of the UTF-8 password, a random 16-byte salt, 600,000 iterations (the number is read from `lock.json`), a 32-byte key.
+2. **The library’s master key**: 32 random bytes, encrypted with the password key. Changing the password re-encrypts only this key; notes are untouched.
+3. **A note key**: 32 random bytes of its own for every note, encrypted with the master key.
+4. **The note’s text** is encrypted with the note key.
 
-Для Touch ID мастер-ключ кладётся в связку ключей macOS: служба `local.pero.markdown.locked-notes`, учётная запись — путь к папке библиотеки.
+For Touch ID the master key is stored in the macOS keychain: service `local.pero.markdown.locked-notes`, account = the path of the library folder.
 
 ## `lock.json`
 
-Лежит в служебной папке главной библиотеки: `<библиотека>/.pero/lock.json`. Заметки в подключённых папках с диска запираются тем же паролем и тем же мастер-ключом.
+Lives in the main library’s data folder: `<library>/.pero/lock.json`. Notes in folders connected from disk are locked with the same password and the same master key.
 
 ```json
 {
   "version": 1,
   "iterations": 600000,
-  "salt": "<base64, 16 байт>",
-  "wrappedMasterKey": "<base64, combined: мастер-ключ под ключом из пароля>",
-  "hint": "подсказка или отсутствует"
+  "salt": "<base64, 16 bytes>",
+  "wrappedMasterKey": "<base64, combined: the master key under the password key>",
+  "hint": "a hint, or absent"
 }
 ```
 
@@ -39,10 +41,10 @@ swift tools/decrypt-locked.swift ~/Library/Application\ Support/Pero/Library/.pe
 {
   "format": "pero-locked",
   "version": 1,
-  "title": "Название заметки открытым текстом, как в «Заметках» Apple",
-  "wrappedKey": "<base64, combined: ключ заметки под мастер-ключом>",
-  "ciphertext": "<base64, combined: JSON {\"text\": \"…Markdown…\"} под ключом заметки>"
+  "title": "The note’s title in plain text, as in Apple Notes",
+  "wrappedKey": "<base64, combined: the note key under the master key>",
+  "ciphertext": "<base64, combined: JSON {\"text\": \"…Markdown…\"} under the note key>"
 }
 ```
 
-Название остаётся открытым, как в «Заметках» Apple: его видно в списке заметок без пароля. Заметку с вложениями заблокировать нельзя — шифруется только текст.
+The title stays readable, as in Apple Notes: it shows in the note list without the password. A note with attachments can’t be locked — only the text is encrypted.

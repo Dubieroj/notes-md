@@ -22,12 +22,12 @@ guard let configData = FileManager.default.contents(atPath: args[1]),
       let noteData = FileManager.default.contents(atPath: args[2]),
       let envelope = try? JSONDecoder().decode(Envelope.self, from: noteData),
       let wrappedKey = Data(base64Encoded: envelope.wrappedKey),
-      let ciphertext = Data(base64Encoded: envelope.ciphertext) else { fail("Не удалось прочитать файлы", 2) }
+      let ciphertext = Data(base64Encoded: envelope.ciphertext) else { fail("Cannot read the files", 2) }
 
 func readPassword() -> String {
     guard isatty(0) != 0 else { return readLine(strippingNewline: true) ?? "" }
     var buffer = [CChar](repeating: 0, count: 1024)
-    return readpassphrase("Пароль: ", &buffer, buffer.count, 0).map { String(cString: $0) } ?? ""
+    return readpassphrase("Password: ", &buffer, buffer.count, 0).map { String(cString: $0) } ?? ""
 }
 let password = Array(readPassword().utf8)
 // PBKDF2-HMAC-SHA256 of the UTF-8 password → the key that wraps the library's master key.
@@ -51,5 +51,5 @@ do {
     let payload = try JSONDecoder().decode(Payload.self, from: open(ciphertext, with: noteKey))
     FileHandle.standardOutput.write(Data(payload.text.utf8))
 } catch {
-    fail("Неверный пароль или повреждённый файл", 1)
+    fail("Wrong password or damaged file", 1)
 }

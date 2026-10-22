@@ -1,29 +1,29 @@
 #!/bin/bash
-# Собирает «Notes MD.app» («Заметки.md») в папке build/ и запускает его. Можно передать файл: ./run.sh заметка.md
-# С Xcode и xcodegen собирается полное приложение с расширениями (виджеты, «Поделиться»,
-# Quick Look, «Команды»); без xcodegen или с PERO_SPM=1 — только приложение через SwiftPM.
+# Builds "Notes MD.app" (Notes.md) into build/ and launches it. A file can be passed: ./run.sh note.md
+# With Xcode, xcodegen and a signing certificate the full app is built, with its extensions (widgets,
+# Share, Quick Look, Shortcuts); otherwise, or with PERO_SPM=1, only the app itself, through SwiftPM.
 set -e
 cd "$(dirname "$0")"
 
-# Страница редактора (CodeMirror). Готовая сборка лежит в Resources/web, поэтому Node нужен только для правок в web/.
+# The editor page (CodeMirror). A built copy is kept in Resources/web, so Node is only needed to change web/.
 if command -v npm >/dev/null; then
   [ -d web/node_modules ] || npm --prefix web ci --silent
   (cd web && node build.mjs)
 elif [ ! -f Resources/web/js/main.js ]; then
-  echo "Нужен Node.js (brew install node), чтобы собрать web/." >&2
+  echo "Node.js is needed to build web/ (brew install node)." >&2
   exit 1
 fi
 
 APP="build/Notes MD.app"
 DERIVED=.xcbuild
-# Сборка для автопроверок (tools/check*.sh): с тестовым пультом и отдельно от обычной.
+# The build for the app checks (tools/check*.sh): with the test control channel, apart from the regular one.
 if [ "${PERO_TEST_HOOKS:-0}" = 1 ]; then
   APP="build/test/Notes MD.app"
   DERIVED=.xcbuild-test
 fi
 pkill -f "$PWD/$APP/Contents/MacOS/Pero" || true  # only the copy built here, never the installed app
 
-# Команда разработчика для подписи: PERO_TEAM или та, что в сертификате Apple Development.
+# The development team for signing: PERO_TEAM, or the one in the Apple Development certificate.
 TEAM="${PERO_TEAM:-$(security find-certificate -c "Apple Development" -p 2>/dev/null \
   | openssl x509 -noout -subject 2>/dev/null | sed -n 's/.*OU *= *\([A-Z0-9]\{10\}\).*/\1/p')}"
 
@@ -49,12 +49,12 @@ else
   cp "$BIN" "$APP/Contents/MacOS/"
   cp Info.plist "$APP/Contents/"
   cp -R Resources/web Resources/AppIcon.icns Resources/ru.lproj Resources/en.lproj "$APP/Contents/Resources/"
-  # Подпись сертификатом разработчика, если он есть; иначе ad-hoc.
+  # Signed with the development certificate if there is one, ad hoc otherwise.
   IDENTITY=$(security find-identity -v -p codesigning | awk '/Apple Development/ {print $2; exit}')
   codesign --force --sign "${IDENTITY:--}" "$APP"
 fi
 
-# Сборка без запуска не регистрируется в macOS: для .md система берёт приложение из «Программ», а не копию отсюда.
+# A build that isn't launched is unregistered from macOS, so .md files open in the installed app, not in this copy.
 LSR=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
 if [ "$NO_OPEN" = 1 ]; then
   for copy in "$PWD/$DERIVED/Build/Products/Release/Pero.app" "$PWD/$APP"; do "$LSR" -u "$copy" 2>/dev/null || true; done

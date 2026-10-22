@@ -579,6 +579,7 @@ extension LibraryWindowController: NSServicesMenuRequestor {
             items[1].animator().isCollapsed = open
             items[2].animator().isCollapsed = !open
         }
+        updateBackButton(visible: open)
         if open { editor.focusText() } else { list.focus() }
     }
 }

@@ -36,6 +36,7 @@
 "Введите пароль для заблокированных заметок" = "Enter the password for locked notes";
 "Введите пароль для заметок, чтобы открыть её." = "Enter the notes password to view this note.";
 "Введите пароль для заметок, чтобы снять с неё защиту." = "Enter the notes password to remove its lock.";
+"Вернуться к галерее" = "Back to Gallery";
 "Вернуться к оформленному тексту (⌘/)" = "Return to formatted text (⌘/)";
 "Вид" = "View";
 "Вкл." = "On";

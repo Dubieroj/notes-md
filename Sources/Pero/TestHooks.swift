@@ -134,6 +134,16 @@ enum TestHooks {
         case "app":
             // An app-level menu command (settings, quick note…), through the responder chain.
             done(NSApp.sendAction(Selector(arg), to: nil, from: NSMenuItem()))
+        case "columns":
+            // Moves a divider like a drag ("divider", "position"), then reports the columns.
+            guard let main, let split = main.window?.contentViewController as? NSSplitViewController else { return done(nil) }
+            if let divider = command["divider"] as? Int, let position = command["position"] as? Double {
+                split.splitView.setPosition(CGFloat(position), ofDividerAt: divider)
+                split.splitView.adjustSubviews()
+            }
+            let back = main.window?.toolbar?.items.first { $0.itemIdentifier == LibraryWindowController.backToGalleryID }
+            done(["columns": split.splitViewItems.map { ["width": Int($0.viewController.view.frame.width), "collapsed": $0.isCollapsed] },
+                  "backButtonVisible": back.map { !$0.isHidden } ?? false])
         case "menus":
             // Top-level menus with their items, to check the interface language.
             done((NSApp.mainMenu?.items ?? []).map { top in

@@ -65,6 +65,11 @@ final class LibraryWindowController: NSWindowController, NSWindowDelegate, NSToo
         toolbar.allowsUserCustomization = true
         toolbar.autosavesConfiguration = true
         window.toolbar = toolbar
+        // Toolbars saved before the Back button existed get it too.
+        if !toolbar.items.contains(where: { $0.itemIdentifier == Self.backToGalleryID }) {
+            let after = toolbar.items.firstIndex { $0.itemIdentifier == .sidebarTrackingSeparator }
+            toolbar.insertItem(withItemIdentifier: Self.backToGalleryID, at: after.map { $0 + 1 } ?? 0)
+        }
 
         wire()
         if let saved = Settings.lastScope.flatMap(Scope.init(encoded:)), exists(saved) { scope = saved }
@@ -401,6 +406,7 @@ final class LibraryWindowController: NSWindowController, NSWindowDelegate, NSToo
     // MARK: Toolbar
 
     static let viewModeID = NSToolbarItem.Identifier("pero.viewMode")
+    static let backToGalleryID = NSToolbarItem.Identifier("pero.backToGallery")
     static let deleteID = NSToolbarItem.Identifier("pero.delete")
     static let listSeparatorID = NSToolbarItem.Identifier("pero.listSeparator")
     static let composeID = NSToolbarItem.Identifier("pero.compose")
@@ -414,7 +420,7 @@ final class LibraryWindowController: NSWindowController, NSWindowDelegate, NSToo
     static let searchID = NSToolbarItem.Identifier("pero.search")
 
     func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        [.toggleSidebar, .sidebarTrackingSeparator, Self.viewModeID, .flexibleSpace, Self.deleteID, Self.listSeparatorID,
+        [.toggleSidebar, .sidebarTrackingSeparator, Self.backToGalleryID, Self.viewModeID, .flexibleSpace, Self.deleteID, Self.listSeparatorID,
          Self.composeID, .space, Self.formatID, Self.checklistID, Self.tableID, Self.attachID, .flexibleSpace,
          Self.sourceID, Self.lockID, Self.shareID, Self.searchID]
     }
@@ -453,6 +459,11 @@ final class LibraryWindowController: NSWindowController, NSWindowDelegate, NSToo
             group.label = String(localized: "Вид")
             group.selectedIndex = Settings.galleryView ? 1 : 0
             return group
+        case Self.backToGalleryID:
+            let item = button("chevron.left", String(localized: "Назад"), #selector(backToGallery(_:)))
+            item.toolTip = String(localized: "Вернуться к галерее")
+            item.isHidden = !isGalleryNoteOpen
+            return item
         case Self.deleteID: return button("trash", String(localized: "Удалить"), #selector(deleteNote(_:)))
         case Self.listSeparatorID:
             return NSTrackingSeparatorToolbarItem(identifier: id, splitView: split.splitView, dividerIndex: 1)
@@ -564,6 +575,16 @@ final class LibraryWindowController: NSWindowController, NSWindowDelegate, NSToo
     }
     @objc func showGallery(_ sender: Any?) { setGallery(true) }
 
+    /// A note opened from the gallery covers the cards; the Back button brings them back.
+    var isGalleryNoteOpen: Bool { Settings.galleryView && listItem.isCollapsed }
+
+    @objc func backToGallery(_ sender: Any?) { galleryNoteOpen(false) }
+
+    /// `visible` while a collapse animation hasn't finished yet; otherwise read from the layout.
+    func updateBackButton(visible: Bool? = nil) {
+        window?.toolbar?.items.first { $0.itemIdentifier == Self.backToGalleryID }?.isHidden = !(visible ?? isGalleryNoteOpen)
+    }
+
     /// Gallery: as in Notes, the cards take the whole content area; opening a card shows
     /// the note in their place, and ⌘2 or the toolbar goes back to the cards.
     func setGallery(_ on: Bool) {
@@ -578,6 +599,11 @@ final class LibraryWindowController: NSWindowController, NSWindowDelegate, NSToo
         listItem.maximumThickness = on ? NSSplitViewItem.unspecifiedDimension : 520
         items[1].isCollapsed = false
         items[2].isCollapsed = on
+        // Only the gallery hides a column (the cards or the open note). In the list view neither
+        // can be dragged shut: there would be no way to bring it back.
+        items[1].canCollapse = on
+        items[2].canCollapse = on
+        updateBackButton()
         if !on {
             // Back to three columns with the list as wide as it was before the gallery.
             let width = min(max(listWidthBeforeGallery, 260), 400)
